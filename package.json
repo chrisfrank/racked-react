@@ -1,0 +1,31 @@
+{
+  "name": "react-responsible",
+  "version": "0.1.0",
+  "description": "Build http responses with React and react-router",
+  "main": "lib/index.js",
+  "repository": "https://www.npmjs.com/package/react-responsible",
+  "author": "Chris Frank",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "react": "^16.3",
+    "react-dom": "^16.3",
+    "react-router": "4.x"
+  },
+  "scripts": {
+    "test": "jest --watchAll",
+    "start": "nodemon src/server.js --exec babel-node"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.4.3",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "jest": "^22.4.3",
+    "nodemon": "^1.17.3",
+    "prop-types": "^15.6.1",
+    "regenerator-runtime": "^0.11.1",
+    "supertest": "^3.0.0"
+  }
+}
