@@ -1,17 +1,16 @@
 import React from 'react';
 const PropTypes = require('prop-types');
-import { Consumer } from './Server';
+import { EnvConsumer } from './index';
 
 const Response = ({ status, headers, body }) => (
-  <Consumer>
-    {res => {
-      res.writeHead(status, headers);
-      res.end(body);
+  <EnvConsumer>
+    {env => {
+      env.res.writeHead(200, headers);
+      env.res.end(body);
       return null;
     }}
-  </Consumer>
+  </EnvConsumer>
 );
-
 
 Response.defaultProps = {
   status: 200,
@@ -26,6 +25,6 @@ Response.propTypes = {
     PropTypes.object,
     PropTypes.array,
   ]).isRequired,
-}
+};
 
 module.exports = Response;
