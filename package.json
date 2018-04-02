@@ -29,7 +29,7 @@
   },
   "scripts": {
     "build": "babel src -d dist",
-    "test": "jest --watchAll",
+    "test": "jest",
     "start": "nodemon demo/index.js --exec babel-node",
     "precommit": "lint-staged"
   },

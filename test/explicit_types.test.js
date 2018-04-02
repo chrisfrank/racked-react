@@ -8,13 +8,17 @@ const App = props => (
   <StaticRouter location={props.req.url} context={props}>
     <Switch>
       <Route
-        path="/json"
+        path="/json/header"
         render={() => (
           <Response
-            body={JSON.stringify(['an', 'array', 'of', 'data'])}
+            body={['an', 'array', 'of', 'data']}
             headers={{ 'Content-Type': 'application/json' }}
           />
         )}
+      />
+      <Route
+        path="/json/prop"
+        render={() => <Response body={['an', 'array', 'of', 'data']} json />}
       />
       <Route
         path="/html"
@@ -41,10 +45,23 @@ const App = props => (
 const server = createServer(App);
 
 test(
-  'JSON',
+  'JSON in content-type',
   done =>
     request(server)
-      .get('/json')
+      .get('/json/header')
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(typeof res.body).toEqual('object');
+        return done();
+      }),
+  100
+);
+
+test(
+  'JSON as a prop',
+  done =>
+    request(server)
+      .get('/json/prop')
       .expect('Content-Type', /json/)
       .then(res => {
         expect(typeof res.body).toEqual('object');

@@ -10,4 +10,4 @@ const App = () => (
   </Fetcher>
 );
 
-httj.createServer(racked(App)).listen(3000, '127.0.0.1');
+http.createServer(racked(App)).listen(3000, '127.0.0.1');

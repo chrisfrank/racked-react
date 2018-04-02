@@ -7,16 +7,22 @@ const App = () => <Response body="ok" />;
 
 const server = createServer(App);
 
-test('Implicit json', done =>
+test('It returns JSON when asked', done =>
   request(server)
     .get('/')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
     .end(done));
 
-test('Implicit json', done =>
+test('it returns html when asked', done =>
   request(server)
-    .get('/')
+    .get('/hello.html')
     .set('Accept', 'text/html')
     .expect('Content-Type', /html/)
+    .end(done));
+
+test('It returns text/plain by default', done =>
+  request(server)
+    .get('/hello.html')
+    .expect('Content-Type', /plain/)
     .end(done));
