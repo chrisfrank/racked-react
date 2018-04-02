@@ -1,11 +1,15 @@
 import React from 'react';
-const PropTypes = require('prop-types');
-import { EnvConsumer } from './index';
+import PropTypes from 'prop-types';
+import { EnvConsumer } from '../index';
+
+const defaultHeaders = {
+  'Content-Type': 'text/plain',
+};
 
 const Response = ({ status, headers, body }) => (
   <EnvConsumer>
     {env => {
-      env.res.writeHead(200, headers);
+      env.res.writeHead(status, Object.assign({}, defaultHeaders, headers));
       env.res.end(body);
       return null;
     }}

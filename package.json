@@ -2,8 +2,8 @@
   "name": "racked-react",
   "version": "0.1.0",
   "description":
-    "Handle http requests in React, with an API inspired by ruby's Rack",
-  "main": "lib/index.js",
+    "Handle http requests in React, with an API inspired by Ruby's Rack",
+  "main": "dist/index.js",
   "repository": "https://www.npmjs.com/package/racked-react",
   "author": "Chris Frank",
   "license": "MIT",
@@ -28,6 +28,7 @@
     "supertest": "^3.0.0"
   },
   "scripts": {
+    "build": "babel src -d dist",
     "test": "jest --watchAll",
     "start": "nodemon demo/index.js --exec babel-node",
     "precommit": "lint-staged"
