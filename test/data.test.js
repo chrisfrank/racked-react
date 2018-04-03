@@ -1,7 +1,6 @@
 import React from 'react';
 import request from 'supertest';
-import createServer from './support/createServer';
-import { Fetcher, Response } from '../src/index';
+import { Hold, Response, racked } from '../src/index';
 
 const fakeFetch = key => () =>
   new Promise(resolve => {
@@ -11,20 +10,19 @@ const fakeFetch = key => () =>
   });
 
 const App = () => (
-  <Fetcher id="lennon" query={fakeFetch('lennon')}>
+  <Hold id="john" until={fakeFetch('lennon')}>
     {john => (
-      <Fetcher id="mccartney" query={fakeFetch('mccartney')}>
+      <Hold id="paul" until={fakeFetch('mccartney')}>
         {paul => <Response body={`${john} ${paul}`} />}
-      </Fetcher>
+      </Hold>
     )}
-  </Fetcher>
+  </Hold>
 );
 
 test(
   'Data loading',
   done => {
-    const server = createServer(App);
-    return request(server)
+    return request(racked(App))
       .get('/')
       .expect(200, 'lennon mccartney')
       .end(done);
@@ -36,12 +34,11 @@ test(
   'Error handling',
   done => {
     const ErrorApp = () => (
-      <Fetcher query={() => new Promise((res, rej) => rej('nah'))} id="jim">
+      <Hold until={() => new Promise((res, rej) => rej('nah'))} id="jim">
         {data => <Response body={data} />}
-      </Fetcher>
+      </Hold>
     );
-    const server = createServer(ErrorApp);
-    return request(server)
+    return request(racked(ErrorApp))
       .get('/')
       .expect(500)
       .end(done);

@@ -1,11 +1,10 @@
 import React from 'react';
 import request from 'supertest';
-import createServer from './support/createServer';
-import { Response } from '../src/index';
+import { Response, racked } from '../src/index';
 
 const App = () => <Response body="ok" />;
 
-const server = createServer(App);
+const server = racked(App);
 
 test('It returns JSON when asked', done =>
   request(server)

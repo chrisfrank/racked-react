@@ -12,11 +12,11 @@ const Hold = ({ id, until, children }) => (
           const newProps = Object.assign({}, env, { [id]: result });
           env.call(newProps);
         })
-        .catch(env.errorHandler);
+        .catch(env.onError);
 
       return null;
     }}
   </EnvConsumer>
 );
 
-export default Fetcher;
+export default Hold;

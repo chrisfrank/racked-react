@@ -1,6 +1,5 @@
 import React from 'react';
 import { Route, Switch, StaticRouter } from 'react-router';
-import http from 'http';
 import request from 'supertest';
 import { Response, racked } from '../src/index';
 
@@ -16,10 +15,10 @@ const App = props => (
   </StaticRouter>
 );
 
-const server = http.createServer(racked(App));
+const app = racked(App);
 
 test('Root', done => {
-  request(server)
+  request(app)
     .get('/')
     .then(res => {
       expect(res.text).toEqual('Root');
@@ -28,7 +27,7 @@ test('Root', done => {
 });
 
 test('Artists', done => {
-  request(server)
+  request(app)
     .get('/artists')
     .then(res => {
       expect(res.text).toEqual('Artists');
