@@ -13,20 +13,29 @@ const defaults = {
 };
 
 // wrap an App component in a node/http-compatible function
-// sefault server is node/http, but it works with express, etc
+// default server is node/http, but it works with express, etc
 const racked = (App, options = defaults) =>
   options.run((req, res) => {
-    const onError = error => options.handleError(error, req, res);
-    return call({ app: App, req, res, onError });
+    const _racked_onError = error => options.handleError(error, req, res);
+    return _racked_render({
+      _racked_app: App,
+      _racked_onError,
+      _racked_store: {},
+      req,
+      res,
+    });
   });
 
-// render the racked App, passing this `call` fn itself down as a render
+// render the racked App, passing this fn itself down as a render
 // prop, so that components down the chain can instantiate Promises
 // and re-call render with the promise results
-const call = props => {
-  const env = Object.assign(props, { call });
+const _racked_render = props => {
+  const env = Object.assign(props, { _racked_render });
   return renderToString(
-    <EnvProvider value={env} children={React.createElement(env.app, env)} />
+    <EnvProvider
+      value={env}
+      children={React.createElement(env._racked_app, env)}
+    />
   );
 };
 

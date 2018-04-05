@@ -24,6 +24,7 @@
     "lint-staged": "^7.0.2",
     "nodemon": "^1.17.3",
     "react-router": "^4.x",
+    "react-router-dom": "^4.2.2",
     "regenerator-runtime": "^0.11.1",
     "sqlite3": "^4.0.0",
     "supertest": "^3.0.0"
