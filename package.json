@@ -9,6 +9,7 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "path-to-regexp": "^2.2.0",
     "react": "^16.3",
     "react-dom": "^16.3"
   },

@@ -1,18 +1,15 @@
 import React from 'react';
-import { StaticRouter, Route, Switch } from 'react-router';
-import { Redirect, Response, racked } from '../src';
+import { Redirect, Response, Route, racked } from '../src';
 import Artists from './Artists';
 import Home from './Home';
 
 const App = props => (
-  <StaticRouter location={props.req.url} context={props}>
-    <Switch>
-      <Route path="/artists" component={Artists} />
-      <Route path="/redirect" render={() => <Redirect to="/artists" />} />
-      <Route exact path="/" component={Home} />
-      <Route render={() => <Response status={404} />} />
-    </Switch>
-  </StaticRouter>
+  <div>
+    <Route path="/artists" children={Artists} />
+    <Route path="/redirect" children={() => <Redirect to="/artists" />} />
+    <Route path="/" children={Home} />
+    <Route children={() => <Response status={404} />} />
+  </div>
 );
 
 racked(App).listen(3000, '127.0.0.1');
