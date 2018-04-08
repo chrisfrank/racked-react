@@ -28,12 +28,16 @@ const App = () => (
   </Hold>
 );
 
-test('Data loading', done => {
-  request(racked(App))
-    .get('/')
-    .expect(200, 'john paul george ringo')
-    .end(done);
-});
+test(
+  'Data loading',
+  done => {
+    request(racked(App))
+      .get('/')
+      .expect(200, 'john paul george ringo')
+      .end(done);
+  },
+  500
+);
 
 test('Error handling', done => {
   const ErrorApp = () => (
