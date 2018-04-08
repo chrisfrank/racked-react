@@ -31,7 +31,11 @@ const racked = (App, options = defaults) =>
 // prop, so that components down the chain can instantiate Promises
 // and re-call render with the promise results
 const _rack_render = props => {
-  const env = Object.assign({}, props, { _rack_render, _rack_holds: 0 });
+  const env = Object.assign({}, props, {
+    _rack_render,
+    _rack_holds: 0,
+    _rack_branch: undefined,
+  });
   return renderToString(
     <EnvProvider
       value={env}

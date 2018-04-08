@@ -10,7 +10,7 @@ const Match = ({ path, children, config = {} }) => (
 
       if (!path && !config.exact) return Next({ env, children });
 
-      const pathToMatch = pathify(env.branch, path);
+      const pathToMatch = pathify(env._rack_branch, path);
       const branch = branchify(pathToMatch, env.req.url, config);
 
       return branch ? Next({ env, branch, children }) : null;
@@ -19,7 +19,7 @@ const Match = ({ path, children, config = {} }) => (
 );
 
 const Next = ({ env, branch, children }) => (
-  <EnvProvider value={Object.assign({}, env, { branch })}>
+  <EnvProvider value={Object.assign({}, env, { _rack_branch: branch })}>
     {typeof children === 'function' ? children(branch) : children}
   </EnvProvider>
 );

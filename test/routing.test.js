@@ -10,7 +10,9 @@ const App = props => (
         <Hold until={findArtist(branch.params.id)}>
           {artist => (
             <React.Fragment>
-              <Endpoint method="GET" children={Read} />
+              <Endpoint method="GET">
+                <Response body={artist.name} />
+              </Endpoint>
               <Endpoint method="PATCH" children={Update} />
               <Endpoint method="DELETE" children={Destroy} />
               <Endpoint path="/nest" method="GET" children={Nested} />
@@ -55,11 +57,11 @@ test('CREATE', done => {
     });
 });
 
-test.only('READ', done => {
+test('READ', done => {
   request(app)
     .get('/artists/3')
     .then(res => {
-      expect(res.text).toEqual('Viewing artist');
+      expect(res.text).toEqual('James Blake');
       done();
     });
 });

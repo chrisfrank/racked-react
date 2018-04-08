@@ -21,9 +21,7 @@ const Hold = ({ until, children }) => (
           const store = Object.assign({}, _rack_store);
           // store the promise result
           store[_rack_holds] = result;
-          const newProps = Object.assign({}, env, { _rack_store: store });
-          console.log(newProps._rack_store);
-          return env._rack_render(newProps);
+          env._rack_render(next(env, store));
         })
         .catch(env._rack_onError);
 
