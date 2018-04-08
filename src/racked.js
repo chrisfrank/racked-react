@@ -7,6 +7,7 @@ import { EnvProvider } from './index';
 const defaults = {
   run: http.createServer,
   handleError: (error, req, res) => {
+    console.log(error);
     res.writeHead(500, error);
     res.end(JSON.stringify(error));
   },
@@ -16,11 +17,11 @@ const defaults = {
 // default server is node/http, but it works with express, etc
 const racked = (App, options = defaults) =>
   options.run((req, res) => {
-    const _racked_onError = error => options.handleError(error, req, res);
-    return _racked_render({
-      _racked_app: App,
-      _racked_onError,
-      _racked_store: {},
+    const _rack_onError = error => options.handleError(error, req, res);
+    return _rack_render({
+      _rack_app: App,
+      _rack_onError,
+      _rack_store: [],
       req,
       res,
     });
@@ -29,12 +30,12 @@ const racked = (App, options = defaults) =>
 // render the racked App, passing this fn itself down as a render
 // prop, so that components down the chain can instantiate Promises
 // and re-call render with the promise results
-const _racked_render = props => {
-  const env = Object.assign(props, { _racked_render });
+const _rack_render = props => {
+  const env = Object.assign({}, props, { _rack_render, _rack_holds: 0 });
   return renderToString(
     <EnvProvider
       value={env}
-      children={React.createElement(env._racked_app, env)}
+      children={React.createElement(env._rack_app, env)}
     />
   );
 };

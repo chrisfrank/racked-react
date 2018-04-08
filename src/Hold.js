@@ -1,23 +1,31 @@
 import React from 'react';
-import { EnvConsumer, Response } from './index';
+import { EnvConsumer, EnvProvider, Response } from './index';
 
-const Hold = ({ id, until, children }) => (
+const next = (env, store) =>
+  Object.assign({}, env, {
+    _rack_holds: env._rack_holds + 1,
+    _rack_store: store || env._rack_store,
+  });
+
+const Hold = ({ until, children }) => (
   <EnvConsumer>
     {env => {
-      const data = env._racked_store[id];
-      if (data) return children(data);
+      const { _rack_holds, _rack_store } = env;
+      const data = _rack_store[_rack_holds];
+      if (data)
+        return <EnvProvider value={next(env)} children={children(data)} />;
 
-      until()
+      Promise.resolve(typeof until === 'function' ? until() : until)
         .then(result => {
           // copy the store to a new object
-          const _racked_store = Object.assign({}, env._racked_store);
+          const store = Object.assign({}, _rack_store);
           // store the promise result
-          _racked_store[id] = result;
-          // rerender the app with the new store
-          const newProps = Object.assign({}, env, { _racked_store });
-          env._racked_render(newProps);
+          store[_rack_holds] = result;
+          const newProps = Object.assign({}, env, { _rack_store: store });
+          console.log(newProps._rack_store);
+          return env._rack_render(newProps);
         })
-        .catch(env._racked_onError);
+        .catch(env._rack_onError);
 
       return null;
     }}

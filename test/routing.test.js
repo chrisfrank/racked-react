@@ -1,22 +1,30 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import request from 'supertest';
-import { Response, Match as Branch, racked } from '../src/index';
+import { findArtist } from './db';
+import { Branch, Endpoint, Hold, Response, racked } from '../src/index';
 
 const App = props => (
-  <Branch>
-    <Branch path="/artists">
-      <Branch path="/:id">
-        <Branch method="GET" exact children={Read} />
-        <Branch method="PATCH" children={Update} />
-        <Branch method="DELETE" children={Destroy} />
-      </Branch>
-      <Branch method="POST" exact>
-        <Create />
-      </Branch>
-      <Branch method="GET" exact>
-        {List}
-      </Branch>
+  <Branch path="/artists">
+    <Branch path="/:id">
+      {branch => (
+        <Hold until={findArtist(branch.params.id)}>
+          {artist => (
+            <React.Fragment>
+              <Endpoint method="GET" children={Read} />
+              <Endpoint method="PATCH" children={Update} />
+              <Endpoint method="DELETE" children={Destroy} />
+              <Endpoint path="/nest" method="GET" children={Nested} />
+            </React.Fragment>
+          )}
+        </Hold>
+      )}
     </Branch>
+    <Endpoint method="POST">
+      <Create />
+    </Endpoint>
+    <Endpoint method="GET">
+      <List />
+    </Endpoint>
   </Branch>
 );
 
@@ -29,80 +37,56 @@ const Nested = () => <Response>Nested under an artist</Response>;
 
 const app = racked(App);
 
-test(
-  'LIST',
-  done => {
-    request(app)
-      .get('/artists')
-      .then(res => {
-        expect(res.text).toEqual('Listing artists');
-        done();
-      });
-  },
-  100
-);
+test('LIST', done => {
+  request(app)
+    .get('/artists')
+    .then(res => {
+      expect(res.text).toEqual('Listing artists');
+      done();
+    });
+});
 
-test(
-  'CREATE',
-  done => {
-    request(app)
-      .post('/artists')
-      .then(res => {
-        expect(res.text).toEqual('Created artist');
-        done();
-      });
-  },
-  100
-);
+test('CREATE', done => {
+  request(app)
+    .post('/artists')
+    .then(res => {
+      expect(res.text).toEqual('Created artist');
+      done();
+    });
+});
 
-test(
-  'READ',
-  done => {
-    request(app)
-      .get('/artists/3')
-      .then(res => {
-        expect(res.text).toEqual('Viewing artist');
-        done();
-      });
-  },
-  100
-);
+test.only('READ', done => {
+  request(app)
+    .get('/artists/3')
+    .then(res => {
+      expect(res.text).toEqual('Viewing artist');
+      done();
+    });
+});
 
-test(
-  'UPDATE',
-  done => {
-    request(app)
-      .patch('/artists/3')
-      .then(res => {
-        expect(res.text).toEqual('Updated artist');
-        done();
-      });
-  },
-  100
-);
+test('UPDATE', done => {
+  request(app)
+    .patch('/artists/3')
+    .then(res => {
+      expect(res.text).toEqual('Updated artist');
+      done();
+    });
+});
 
-test(
-  'DESTROY',
-  done => {
-    request(app)
-      .delete('/artists/3')
-      .then(res => {
-        expect(res.text).toEqual('Destroyed artist');
-        done();
-      });
-  },
-  100
-);
+test('DESTROY', done => {
+  request(app)
+    .delete('/artists/3')
+    .then(res => {
+      expect(res.text).toEqual('Destroyed artist');
+      done();
+    });
+});
 
-test(
-  'nested',
-  done => {
-    request(app)
-      .get('/artists/3/nested')
-      .then(res => {
-        expect(res.text).toEqual('Nested under an artist');
-        done();
-      });
-  },
-  100
-);
+test('nested', done => {
+  request(app)
+    .get('/artists/3/nest')
+    .then(res => {
+      expect(res.text).toEqual('Nested under an artist');
+      done();
+    });
+});

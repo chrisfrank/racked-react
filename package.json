@@ -41,5 +41,8 @@
       "prettier --write --trailing-comma es5 --single-quote",
       "git add"
     ]
+  },
+  "jest": {
+    "setupTestFrameworkScriptFile": "<rootDir>/test/config.js"
   }
 }
