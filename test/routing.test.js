@@ -66,7 +66,7 @@ test('CREATE', done => {
     });
 });
 
-test.only('READ', done => {
+test('READ', done => {
   request(app)
     .get('/artists/3')
     .then(res => {
@@ -94,6 +94,7 @@ test('DESTROY', done => {
 });
 
 test('nested', done => {
+  debugger;
   request(app)
     .get('/artists/3/nest')
     .then(res => {

@@ -35,6 +35,7 @@
     "bench": "NODE_ENV=production node test/benchmark.js",
     "build": "babel src -d dist",
     "test": "jest",
+    "debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "start": "nodemon demo/index.js --exec babel-node",
     "precommit": "lint-staged"
   },
