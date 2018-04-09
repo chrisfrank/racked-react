@@ -8,8 +8,6 @@ const Match = ({ path, children, config = {} }) => (
       const { method } = config;
       if (method && method.toUpperCase() !== env.req.method) return null;
 
-      if (!path && !config.exact) return Next({ env, children });
-
       const pathToMatch = pathify(env._rack_branch, path);
       const branch = branchify(pathToMatch, env.req.url, config);
 
@@ -18,11 +16,10 @@ const Match = ({ path, children, config = {} }) => (
   </EnvConsumer>
 );
 
-const Next = ({ env, branch, children }) => (
-  <EnvProvider value={Object.assign({}, env, { _rack_branch: branch })}>
-    {typeof children === 'function' ? children(branch) : children}
-  </EnvProvider>
-);
+const Next = ({ env, branch, children }) => {
+  env._rack_branch = branch;
+  return typeof children === 'function' ? children(branch) : children;
+};
 
 export const Branch = ({ path, children }) => (
   <Match path={path} children={children} config={{ end: false }} />

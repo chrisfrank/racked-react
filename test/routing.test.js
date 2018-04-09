@@ -4,30 +4,39 @@ import { findArtist } from './db';
 import { Branch, Endpoint, Hold, Response, racked } from '../src/index';
 
 const App = props => (
-  <Branch path="/artists">
-    <Branch path="/:id">
-      {branch => (
-        <Hold until={findArtist(branch.params.id)}>
-          {artist => (
-            <React.Fragment>
-              <Endpoint method="GET">
-                <Response body={artist.name} />
-              </Endpoint>
-              <Endpoint method="PATCH" children={Update} />
-              <Endpoint method="DELETE" children={Destroy} />
-              <Endpoint path="/nest" method="GET" children={Nested} />
-            </React.Fragment>
-          )}
-        </Hold>
-      )}
+  <React.Fragment>
+    <Endpoint method="GET" path="/">
+      Home
+    </Endpoint>
+    <Branch path="/artists">
+      <Branch path="/:id">
+        {branch => (
+          <Hold until={findArtist(branch.params.id)}>
+            {artist => (
+              <React.Fragment>
+                <Endpoint method="GET">
+                  <Response body={artist.name} />
+                </Endpoint>
+                <Endpoint method="PATCH" children={Update} />
+                <Endpoint method="DELETE" children={Destroy} />
+                <Endpoint path="/nest" method="GET" children={Nested} />
+              </React.Fragment>
+            )}
+          </Hold>
+        )}
+      </Branch>
+      {/* THIS NEEDS TO INHERIT ITS PARENT MATCH, NOT /artists/:id */}
+      <Endpoint method="POST">
+        <Create />
+      </Endpoint>
+      <Endpoint method="GET">
+        <List />
+      </Endpoint>
     </Branch>
-    <Endpoint method="POST">
-      <Create />
-    </Endpoint>
-    <Endpoint method="GET">
-      <List />
-    </Endpoint>
-  </Branch>
+    <Branch>
+      <Response status={404} />
+    </Branch>
+  </React.Fragment>
 );
 
 const Create = () => <Response>Created artist</Response>;
@@ -57,7 +66,7 @@ test('CREATE', done => {
     });
 });
 
-test('READ', done => {
+test.only('READ', done => {
   request(app)
     .get('/artists/3')
     .then(res => {
@@ -91,4 +100,11 @@ test('nested', done => {
       expect(res.text).toEqual('Nested under an artist');
       done();
     });
+});
+
+test('404', done => {
+  request(app)
+    .get('/does/not/exist')
+    .expect(404)
+    .end(done);
 });

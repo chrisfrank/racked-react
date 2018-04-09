@@ -5,7 +5,7 @@ export const branchify = (path = '', url, options = {}) => {
   let keys = [];
   const match = pathToRegExp(path, keys, options).exec(url);
   if (!match) return null;
-  if (options.exact && path !== url) return null;
+  //if (options.exact && path !== url) return null;
 
   const params = keys.reduce((memo, key, index) => {
     const val = match[index + 1];
