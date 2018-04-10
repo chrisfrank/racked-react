@@ -1,11 +1,14 @@
 import pathToRegExp from 'path-to-regexp';
 
 // attempt to parse URL into a new route branch, and return null on failure
-export const branchify = (path = '', url, options = {}) => {
+export const matchBranch = (path = '', env, options = {}) => {
   let keys = [];
-  const match = pathToRegExp(path, keys, options).exec(url);
+  const match = pathToRegExp(
+    fullPath(env._rack_branches, path),
+    keys,
+    options
+  ).exec(env.req.url);
   if (!match) return null;
-  //if (options.exact && path !== url) return null;
 
   const params = keys.reduce((memo, key, index) => {
     const val = match[index + 1];
@@ -16,8 +19,12 @@ export const branchify = (path = '', url, options = {}) => {
   return { url: match[0], params };
 };
 
-export const pathify = (branch, path) => {
-  const prefix = branch ? branch.url : '';
+export const fullPath = (branch, path) => {
+  const prefix = branch.length > 0 ? branch[branch.length - 1].url : '';
   const suffix = path || '';
   return prefix + suffix;
+};
+
+export const matchMethod = (env, method) => {
+  return !method || method.toUpperCase() === env.req.method;
 };

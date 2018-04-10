@@ -1,24 +1,38 @@
 import React from 'react';
-import { branchify, pathify } from './utils';
+import { matchBranch, matchMethod } from './utils';
 import { EnvProvider, EnvConsumer } from '../index';
 
-const Match = ({ path, children, config = {} }) => (
+const Match = ({ id, path, children, config = {} }) => (
   <EnvConsumer>
     {env => {
-      const { method } = config;
-      if (method && method.toUpperCase() !== env.req.method) return null;
+      // Return null if another branch has claimed the request
+      if (env._rack_branch) return null;
 
-      const pathToMatch = pathify(env._rack_branch, path);
-      const branch = branchify(pathToMatch, env.req.url, config);
+      // Return null if a method prop was passed and doesn't match
+      if (!matchMethod(env, config.method)) return null;
 
-      return branch ? Next({ env, branch, children }) : null;
+      // Easy cases handled! Run the full match fn
+      const branch = matchBranch(path, env, config);
+
+      return branch ? Next({ id, env, branch, children }) : null;
     }}
   </EnvConsumer>
 );
 
-const Next = ({ env, branch, children }) => {
-  env._rack_branch = branch;
-  return typeof children === 'function' ? children(branch) : children;
+const Next = ({ id, env, branch, children }) => {
+  // CLONE env for future modification by children
+  const nextEnv = Object.assign({}, env, {
+    _rack_branches: env._rack_branches.concat(branch),
+  });
+  // MODIFY env to claim this branch request from siblings
+  env._rack_branch = branch.url;
+
+  // return children with cloned env in Context
+  return (
+    <EnvProvider value={nextEnv}>
+      {typeof children === 'function' ? children(branch) : children}
+    </EnvProvider>
+  );
 };
 
 export const Branch = ({ path, children }) => (
@@ -26,9 +40,5 @@ export const Branch = ({ path, children }) => (
 );
 
 export const Endpoint = ({ path, children, method }) => (
-  <Match
-    path={path}
-    children={children}
-    config={{ end: true, exact: true, method }}
-  />
+  <Match path={path} children={children} config={{ end: true, method }} />
 );
