@@ -1,11 +1,9 @@
-const Benchmark = require('benchmark');
 const express = require('express');
 const React = require('react');
 const request = require('supertest');
 const { racked, Branch, Endpoint, Response } = require('../dist');
 
 const data = [{ id: 1, name: '1' }, { id: 2, name: '2' }];
-const suite = new Benchmark.Suite();
 
 const App = () =>
   React.createElement(
