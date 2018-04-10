@@ -1,8 +1,9 @@
 import { renderToString } from 'react-dom/server';
 
-const Body = ({ body, children, format }) => {
+const Body = ({ body, children, json, format }) => {
   if (children) return renderToString(children);
-  return format.match(/json/i) ? JSON.stringify(body) : body;
+  if (json) return JSON.stringify(json);
+  return body;
 };
 
 export default Body;

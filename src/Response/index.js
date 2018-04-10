@@ -8,7 +8,7 @@ const Response = ({ status, headers, body, children, json }) => (
     {env => {
       const head = Headers({ req: env.req, custom: headers, json });
       env.res.writeHead(status, head);
-      env.res.end(Body({ body, children, format: head['Content-Type'] }));
+      env.res.end(Body({ body, children, json, format: head['Content-Type'] }));
       return null;
     }}
   </EnvConsumer>

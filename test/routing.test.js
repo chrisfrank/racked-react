@@ -1,7 +1,12 @@
 import React from 'react';
 import request from 'supertest';
-import { findArtist } from './db';
+import { db, migrate, seed, rollback } from './db';
 import { Branch, Endpoint, Hold, Response, racked } from '../src/index';
+
+const query = id =>
+  db('artists')
+    .where({ id })
+    .first();
 
 const App = props => (
   <React.Fragment>
@@ -11,7 +16,7 @@ const App = props => (
     <Branch path="/artists">
       <Branch path="/:id">
         {env => (
-          <Hold until={findArtist(env.branch.params.id)}>
+          <Hold until={query(env.branch.params.id)}>
             {artist => (
               <React.Fragment>
                 <Endpoint method="GET">
@@ -46,6 +51,10 @@ const List = () => <Response>Listing artists</Response>;
 const Nested = env => <Response>Nested under an artist</Response>;
 
 const app = racked(App);
+
+beforeAll(migrate);
+beforeAll(seed);
+afterAll(rollback);
 
 test('LIST', done => {
   request(app)

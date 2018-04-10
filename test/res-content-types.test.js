@@ -2,9 +2,11 @@ import React from 'react';
 import request from 'supertest';
 import { Response, racked } from '../src/index';
 
+const data = ['hello', 'world'];
+
 describe('Response content types', () => {
   describe('via http Accept header', () => {
-    const App = () => <Response body="ok" />;
+    const App = () => <Response body={JSON.stringify('ok')} />;
     const server = racked(App);
 
     test('It returns JSON when asked', done =>
@@ -31,19 +33,24 @@ describe('Response content types', () => {
   describe('via server-side settings', () => {
     test('http header', done => {
       const App = () => (
-        <Response body={[1]} headers={{ 'Content-Type': 'application/json' }} />
+        <Response
+          body={JSON.stringify(data)}
+          headers={{ 'Content-Type': 'application/json' }}
+        />
       );
       request(racked(App))
         .get('/')
         .expect('Content-Type', /json/)
+        .expect(200, data)
         .end(done);
     });
 
     test('json prop', done => {
-      const App = () => <Response body={[1]} json />;
+      const App = () => <Response json={data} />;
       request(racked(App))
         .get('/')
         .expect('Content-Type', /json/)
+        .expect(200, data)
         .end(done);
     });
   });

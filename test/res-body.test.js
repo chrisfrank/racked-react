@@ -31,3 +31,11 @@ test('It renders children over body when both are specified', done => {
     .expect(200, renderedString)
     .end(done);
 });
+
+test('It render json over body when both are specified', done => {
+  const App = () => <Response json={['hello']} body={rawString} />;
+  request(racked(App))
+    .get('/')
+    .expect(200, ['hello'])
+    .end(done);
+});
