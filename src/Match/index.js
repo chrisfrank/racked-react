@@ -2,7 +2,7 @@ import React from 'react';
 import { matchBranch, matchMethod } from './utils';
 import { EnvProvider, EnvConsumer } from '../index';
 
-const Match = ({ id, path, children, config = {} }) => (
+const Match = ({ path, children, config = {} }) => (
   <EnvConsumer>
     {env => {
       // Return null if another branch has claimed the request
@@ -14,23 +14,23 @@ const Match = ({ id, path, children, config = {} }) => (
       // Easy cases handled! Run the full match fn
       const branch = matchBranch(path, env, config);
 
-      return branch ? Next({ id, env, branch, children }) : null;
+      return branch ? Next({ env, branch, children }) : null;
     }}
   </EnvConsumer>
 );
 
-const Next = ({ id, env, branch, children }) => {
+const Next = ({ env, branch, children }) => {
   // CLONE env for future modification by children
   const nextEnv = Object.assign({}, env, {
-    _rack_branches: env._rack_branches.concat(branch),
+    branch: Object.assign({}, branch),
   });
   // MODIFY env to claim this branch request from siblings
-  env._rack_branch = branch.url;
+  env._rack_branch = branch;
 
   // return children with cloned env in Context
   return (
     <EnvProvider value={nextEnv}>
-      {typeof children === 'function' ? children(branch) : children}
+      {typeof children === 'function' ? children(nextEnv) : children}
     </EnvProvider>
   );
 };

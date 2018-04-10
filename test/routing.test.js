@@ -10,14 +10,14 @@ const App = props => (
     </Endpoint>
     <Branch path="/artists">
       <Branch path="/:id">
-        {branch => (
-          <Hold until={findArtist(branch.params.id)}>
+        {env => (
+          <Hold until={findArtist(env.branch.params.id)}>
             {artist => (
               <React.Fragment>
                 <Endpoint method="GET">
                   <Response body={artist.name} />
                 </Endpoint>
-                <Endpoint path="/nest" method="GET" children={Nested} />
+                <Endpoint path="/:artist_id" method="GET" children={Nested} />
                 <Endpoint method="PATCH" children={Update} />
                 <Endpoint method="DELETE" children={Destroy} />
               </React.Fragment>
@@ -26,17 +26,14 @@ const App = props => (
         )}
       </Branch>
       <Endpoint method="POST">
-        {' '}
-        <Create />{' '}
+        <Create />
       </Endpoint>
       <Endpoint method="GET">
-        {' '}
-        <List />{' '}
+        <List />
       </Endpoint>
     </Branch>
     <Branch>
-      {' '}
-      <Response status={404} />{' '}
+      <Response status={404} />
     </Branch>
   </React.Fragment>
 );
@@ -46,7 +43,7 @@ const Read = () => <Response>Viewing artist</Response>;
 const Update = () => <Response>Updated artist</Response>;
 const Destroy = () => <Response>Destroyed artist</Response>;
 const List = () => <Response>Listing artists</Response>;
-const Nested = () => <Response>Nested under an artist</Response>;
+const Nested = env => <Response>Nested under an artist</Response>;
 
 const app = racked(App);
 

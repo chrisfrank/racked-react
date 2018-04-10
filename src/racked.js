@@ -34,7 +34,8 @@ const _rack_render = props => {
   const env = Object.assign({}, props, {
     _rack_render,
     _rack_holds: 0,
-    _rack_branches: [],
+    _rack_branch: null,
+    branch: {},
   });
   return renderToString(
     <EnvProvider

@@ -15,5 +15,6 @@ const findArtist = id => () =>
 
 module.exports = {
   default: db,
+  db,
   findArtist,
 };
