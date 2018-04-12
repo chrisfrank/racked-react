@@ -3,10 +3,13 @@ import body from 'co-body';
 import { Hold, Response } from '../../src';
 import { db } from '../db';
 
-const read = id =>
-  db('artists')
+// until operations can be fns that return promises
+const read = env => () => {
+  const id = env.branch.params.id;
+  return db('artists')
     .where({ id })
     .first();
+};
 
 // until operations can be async fns
 const update = async env => {
@@ -20,7 +23,7 @@ const update = async env => {
     .first();
 };
 
-// until operations can be promise cahins
+// until operations can be promise chains
 const create = env =>
   body.json(env.req).then(data =>
     db('artists')
@@ -39,8 +42,13 @@ const destroy = id =>
 
 const list = () => db('artists');
 
-export const Read = ({ branch }) => (
-  <Hold until={read(branch.params.id)}>
+const notFound = (error, req, res) => {
+  res.writeHead(404);
+  res.end('Not Found');
+};
+
+export const Read = env => (
+  <Hold until={read(env)} onError={notFound}>
     {artist => <Response json={artist} />}
   </Hold>
 );

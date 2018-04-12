@@ -17,7 +17,7 @@ const App = () => (
   </Branch>
 );
 
-const app = http.createServer(racked(App));
+const app = racked(App);
 
 beforeEach(migrate);
 beforeEach(seed);

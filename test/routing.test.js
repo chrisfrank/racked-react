@@ -1,47 +1,69 @@
 import React from 'react';
 import request from 'supertest';
+import { StaticRouter, Switch, Route } from 'react-router';
 import { db, migrate, seed, rollback } from './db';
-import { Branch, Endpoint, Hold, Response, racked } from '../src/index';
+import { Endpoint, Hold, Response, racked } from '../src/index';
 
 const query = id =>
   db('artists')
     .where({ id })
     .first();
 
-// TODO make this a react-router test, why not
 const App = props => (
-  <React.Fragment>
-    <Endpoint method="GET" path="/">
-      <Response>Home</Response>
-    </Endpoint>
-    <Branch path="/artists">
-      <Branch path="/:id">
-        {env => (
-          <Hold until={query(env.branch.params.id)}>
-            {artist => (
-              <React.Fragment>
-                <Endpoint method="GET">
-                  <Response body={artist.name} />
-                </Endpoint>
-                <Endpoint path="/:artist_id" method="GET" children={Nested} />
-                <Endpoint method="PATCH" children={Update} />
-                <Endpoint method="DELETE" children={Destroy} />
-              </React.Fragment>
-            )}
-          </Hold>
+  <StaticRouter context={props} location={props.req.url}>
+    <Switch>
+      <Route
+        path="/artists"
+        render={r => (
+          <Switch>
+            <Route
+              path={`${r.match.url}/:id`}
+              render={r => (
+                <Hold until={query(r.match.params.id)}>
+                  {artist => (
+                    <React.Fragment>
+                      <Endpoint path={r.match.url} method="GET">
+                        <Response body={artist.name} />
+                      </Endpoint>
+                      <Endpoint
+                        path={`${r.match.url}/:artist_id`}
+                        method="GET"
+                        children={Nested}
+                      />
+                      <Endpoint
+                        path={r.match.url}
+                        method="PATCH"
+                        children={Update}
+                      />
+                      <Endpoint
+                        path={r.match.url}
+                        method="DELETE"
+                        children={Destroy}
+                      />
+                    </React.Fragment>
+                  )}
+                </Hold>
+              )}
+            />
+            <Route
+              render={() => (
+                <React.Fragment>
+                  <Endpoint path={r.match.url} method="POST">
+                    <Create />
+                  </Endpoint>
+                  <Endpoint path={r.match.url} method="GET">
+                    <List />
+                  </Endpoint>
+                </React.Fragment>
+              )}
+            />
+          </Switch>
         )}
-      </Branch>
-      <Endpoint method="POST">
-        <Create />
-      </Endpoint>
-      <Endpoint method="GET">
-        <List />
-      </Endpoint>
-    </Branch>
-    <Branch>
-      <Response status={404} />
-    </Branch>
-  </React.Fragment>
+      />
+      <Route exact path="/" render={() => <Response>Home</Response>} />
+      <Route render={() => <Response status={404} />} />
+    </Switch>
+  </StaticRouter>
 );
 
 const Create = () => <Response status={201}>Created artist</Response>;

@@ -7,9 +7,9 @@ const next = (env, store) =>
     _rack_store: store || env._rack_store,
   });
 
-const handleError = env => {
-  env.res.writeHead(404);
-  env.res.end('error');
+const handleError = (error, req, res) => {
+  res.writeHead(500, error);
+  res.end();
 };
 
 const Hold = ({ until, children, onError = handleError }) => (
@@ -21,7 +21,7 @@ const Hold = ({ until, children, onError = handleError }) => (
 
       (typeof until === 'function' ? until() : until)
         .then(result => {
-          if (!result) return onError(env);
+          if (!result) throw new Error(`Hold returned ${result}`);
           // copy the store to a new object
           const store = Object.assign({}, _rack_store);
           // store the promise result
@@ -29,7 +29,7 @@ const Hold = ({ until, children, onError = handleError }) => (
           env._rack_render(next(env, store));
         })
         .catch(error => {
-          onError(Object.assign({}, env, { error }));
+          onError(error, env.req, env.res);
         });
 
       return null;
