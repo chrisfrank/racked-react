@@ -7,9 +7,8 @@ import { EnvProvider } from './index';
 const defaults = {
   run: http.createServer,
   handleError: (error, req, res) => {
-    console.log(error);
-    res.writeHead(500, error);
-    res.end(JSON.stringify(error));
+    res.writeHead(200);
+    res.end('ok');
   },
 };
 

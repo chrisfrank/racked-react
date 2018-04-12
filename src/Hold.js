@@ -12,8 +12,7 @@ const Hold = ({ until, children }) => (
     {env => {
       const { _rack_holds, _rack_store } = env;
       const data = _rack_store[_rack_holds];
-      if (data)
-        return <EnvProvider value={next(env)} children={children(data)} />;
+      if (data) return Next({ data, children, env });
 
       Promise.resolve(typeof until === 'function' ? until() : until)
         .then(result => {
@@ -28,6 +27,13 @@ const Hold = ({ until, children }) => (
       return null;
     }}
   </EnvConsumer>
+);
+
+const Next = ({ data, children, env }) => (
+  <EnvProvider
+    value={next(env)}
+    children={typeof children === 'function' ? children(data) : children}
+  />
 );
 
 export default Hold;
