@@ -1,31 +1,16 @@
 import React from 'react';
-import http from 'http';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { EnvProvider } from './index';
 
-// TODO get rid of these. error handling and createServer should be
-// managed in userland.
-const defaults = {
-  run: http.createServer,
-  handleError: (error, req, res) => {
-    res.writeHead(500, error);
-    res.end();
-  },
-};
-
 // wrap an App component in a node/http-compatible function
 // default server is node/http, but it works with express, etc
-const racked = (App, options = defaults) =>
-  options.run((req, res) => {
-    const _rack_onError = error => options.handleError(error, req, res);
-    return _rack_render({
-      _rack_app: App,
-      _rack_onError,
-      _rack_store: [],
-      req,
-      res,
-    });
+const racked = App => (req, res) =>
+  _rack_render({
+    _rack_app: App,
+    _rack_store: [],
+    req,
+    res,
   });
 
 // render the racked App, passing this fn itself down as a render
@@ -38,7 +23,7 @@ const _rack_render = props => {
     _rack_branch: null,
     branch: {},
   });
-  return renderToString(
+  renderToString(
     <EnvProvider
       value={env}
       children={React.createElement(env._rack_app, env)}

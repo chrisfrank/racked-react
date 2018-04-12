@@ -1,4 +1,5 @@
 import React from 'react';
+import http from 'http';
 import request from 'supertest';
 import { Branch, Endpoint, racked } from '../../src';
 import { Create, Read, Update, Delete, List } from './actions';
@@ -16,7 +17,7 @@ const App = () => (
   </Branch>
 );
 
-const app = racked(App);
+const app = http.createServer(racked(App));
 
 beforeEach(migrate);
 beforeEach(seed);

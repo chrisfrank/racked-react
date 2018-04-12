@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnvConsumer, EnvProvider, Response } from './index';
+import { EnvConsumer, EnvProvider } from './index';
 
 const next = (env, store) =>
   Object.assign({}, env, {
@@ -7,22 +7,30 @@ const next = (env, store) =>
     _rack_store: store || env._rack_store,
   });
 
-const Hold = ({ until, children }) => (
+const handleError = env => {
+  env.res.writeHead(404);
+  env.res.end('error');
+};
+
+const Hold = ({ until, children, onError = handleError }) => (
   <EnvConsumer>
     {env => {
       const { _rack_holds, _rack_store } = env;
       const data = _rack_store[_rack_holds];
       if (data) return Next({ data, children, env });
 
-      Promise.resolve(typeof until === 'function' ? until() : until)
+      (typeof until === 'function' ? until() : until)
         .then(result => {
+          if (!result) return onError(env);
           // copy the store to a new object
           const store = Object.assign({}, _rack_store);
           // store the promise result
           store[_rack_holds] = result;
           env._rack_render(next(env, store));
         })
-        .catch(env._rack_onError);
+        .catch(error => {
+          onError(Object.assign({}, env, { error }));
+        });
 
       return null;
     }}
