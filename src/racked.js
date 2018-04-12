@@ -4,11 +4,13 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { EnvProvider } from './index';
 
+// TODO get rid of these. error handling and createServer should be
+// managed in userland.
 const defaults = {
   run: http.createServer,
   handleError: (error, req, res) => {
-    res.writeHead(200);
-    res.end('ok');
+    res.writeHead(500, error);
+    res.end();
   },
 };
 

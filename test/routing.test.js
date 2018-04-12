@@ -8,6 +8,7 @@ const query = id =>
     .where({ id })
     .first();
 
+// TODO make this a react-router test, why not
 const App = props => (
   <React.Fragment>
     <Endpoint method="GET" path="/">
