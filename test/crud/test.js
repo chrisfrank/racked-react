@@ -2,17 +2,21 @@ import React from 'react';
 import http from 'http';
 import request from 'supertest';
 import { Branch, Endpoint, racked } from '../../src';
-import { Create, Read, Update, Delete, List } from './actions';
 import { migrate, rollback, seed } from '../db';
+import Create from './Create';
+import Read from './Read';
+import Update from './Update';
+import Destroy from './Destroy';
+import List from './List';
 
 const App = () => (
   <Branch path="/artists">
-    <Endpoint method="GET" children={List} />
-    <Endpoint method="POST" children={Create} />
+    <Endpoint method="GET">{List}</Endpoint>
+    <Endpoint method="POST">{Create}</Endpoint>
     <Branch path="/:id">
-      <Endpoint method="GET" children={Read} />
-      <Endpoint method="PATCH" children={Update} />
-      <Endpoint method="DELETE" children={Delete} />
+      <Endpoint method="GET">{Read}</Endpoint>
+      <Endpoint method="PATCH">{Update}</Endpoint>
+      <Endpoint method="DELETE">{Destroy}</Endpoint>
     </Branch>
   </Branch>
 );
@@ -59,7 +63,7 @@ test('DELETE', done => {
     .end(done);
 });
 
-test('LIST', done => {
+test('LIST with an empty query string', done => {
   request(app)
     .get('/artists')
     .then(res => {
@@ -68,9 +72,26 @@ test('LIST', done => {
     });
 });
 
+test('LIST with query', done => {
+  request(app)
+    .get('/artists?genre=electronic')
+    .then(res => {
+      expect(res.body.length).toEqual(2);
+      done();
+    });
+});
+
 test('errors: not found', done => {
   request(app)
     .get('/artists/0')
     .expect(404)
+    .end(done);
+});
+
+test('errors: invalid params', done => {
+  request(app)
+    .post('/artists')
+    .send({ id: 7, style: 'classical' })
+    .expect(422)
     .end(done);
 });

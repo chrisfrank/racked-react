@@ -1,10 +1,12 @@
+import url from 'url';
 import pathToRegExp from 'path-to-regexp';
 
 // attempt to parse URL into a new route branch, and return null on failure
 export const matchBranch = (path = '', env, options = {}) => {
   let keys = [];
   const fullPath = expandPath(env.branch.path, path);
-  const match = pathToRegExp(fullPath, keys, options).exec(env.req.url);
+  const { pathname } = url.parse(env.req.url);
+  const match = pathToRegExp(fullPath, keys, options).exec(pathname);
   if (!match) return null;
 
   const params = keys.reduce((memo, key, index) => {
