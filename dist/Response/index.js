@@ -6,13 +6,13 @@ var _react2 = _interopRequireDefault(_react);
 
 var _index = require('../index');
 
-var _headers = require('./headers');
+var _renderHeaders = require('./renderHeaders');
 
-var _headers2 = _interopRequireDefault(_headers);
+var _renderHeaders2 = _interopRequireDefault(_renderHeaders);
 
-var _body = require('./body');
+var _renderBody = require('./renderBody');
 
-var _body2 = _interopRequireDefault(_body);
+var _renderBody2 = _interopRequireDefault(_renderBody);
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
@@ -28,14 +28,14 @@ var Response = function Response(_ref) {
     var request = env.request,
       response = env.response;
 
-    var head = (0, _headers2.default)({
+    var head = (0, _renderHeaders2.default)({
       request: request,
       custom: headers,
       json: json,
     });
     response.writeHead(status, head);
     response.end(
-      (0, _body2.default)({
+      (0, _renderBody2.default)({
         body: body,
         children: children,
         json: json,

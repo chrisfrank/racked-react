@@ -1,7 +1,7 @@
 import React from 'react';
 import { EnvConsumer } from '../index';
-import renderHeaders from './headers';
-import renderBody from './body';
+import renderHeaders from './renderHeaders';
+import renderBody from './renderBody';
 
 const Response = ({ status, headers, body, children, json }) => (
   <EnvConsumer>
