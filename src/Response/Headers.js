@@ -1,5 +1,5 @@
-const defaults = ({ req, json }) => {
-  const { headers } = req;
+const defaults = ({ request, json }) => {
+  const { headers } = request;
   return {
     'Content-Type': json
       ? 'application/json; charset=utf-8'
@@ -7,7 +7,7 @@ const defaults = ({ req, json }) => {
   };
 };
 
-const Headers = ({ req, custom = {}, json }) =>
-  Object.assign({}, defaults({ req, json }), custom);
+const renderHeaders = ({ request, custom = {}, json }) =>
+  Object.assign({}, defaults({ request, json }), custom);
 
-export default Headers;
+export default renderHeaders;

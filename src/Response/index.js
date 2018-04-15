@@ -1,14 +1,22 @@
 import React from 'react';
 import { EnvConsumer } from '../index';
-import Headers from './Headers';
-import Body from './Body';
+import renderHeaders from './headers';
+import renderBody from './body';
 
 const Response = ({ status, headers, body, children, json }) => (
   <EnvConsumer>
     {env => {
-      const head = Headers({ req: env.req, custom: headers, json });
-      env.res.writeHead(status, head);
-      env.res.end(Body({ body, children, json, format: head['Content-Type'] }));
+      const { request, response } = env;
+      const head = renderHeaders({ request, custom: headers, json });
+      response.writeHead(status, head);
+      response.end(
+        renderBody({
+          body,
+          children,
+          json,
+          format: head['Content-Type'],
+        })
+      );
       return null;
     }}
   </EnvConsumer>

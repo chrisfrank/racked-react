@@ -5,7 +5,7 @@ import pathToRegExp from 'path-to-regexp';
 export const matchBranch = (path = '', env, options = {}) => {
   let keys = [];
   const fullPath = expandPath(env.branch.path, path);
-  const { pathname } = url.parse(env.req.url);
+  const { pathname } = url.parse(env.request.url);
   const match = pathToRegExp(fullPath, keys, options).exec(pathname);
   if (!match) return null;
 
@@ -21,5 +21,5 @@ export const matchBranch = (path = '', env, options = {}) => {
 export const expandPath = (prefix = '', suffix = '') => prefix.concat(suffix);
 
 export const matchMethod = (env, method) => {
-  return !method || method.toUpperCase() === env.req.method;
+  return !method || method.toUpperCase() === env.request.method;
 };

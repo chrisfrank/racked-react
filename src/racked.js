@@ -5,12 +5,12 @@ import { EnvProvider } from './index';
 
 // wrap an App component in a node/http-compatible function
 // default server is node/http, but it works with express, etc
-const racked = App => (req, res) =>
+const racked = App => (request, response) =>
   _rack_render({
     _rack_app: App,
     _rack_store: [],
-    req,
-    res,
+    request,
+    response,
   });
 
 // render the racked App, passing this fn itself down as a render

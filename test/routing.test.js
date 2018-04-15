@@ -10,7 +10,7 @@ const query = id =>
     .first();
 
 const App = props => (
-  <StaticRouter context={props} location={props.req.url}>
+  <StaticRouter context={props} location={props.request.url}>
     <Switch>
       <Route
         path="/artists"

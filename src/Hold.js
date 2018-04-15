@@ -7,9 +7,9 @@ const next = (env, store) =>
     _rack_store: store || env._rack_store,
   });
 
-const handleError = (error, req, res) => {
-  res.writeHead(500, error);
-  res.end();
+const handleError = (error, request, response) => {
+  response.writeHead(500, error);
+  response.end();
 };
 
 const Hold = ({ until, children, onError = handleError }) => (
@@ -29,7 +29,7 @@ const Hold = ({ until, children, onError = handleError }) => (
           env._rack_render(next(env, store));
         })
         .catch(error => {
-          onError(error, env.req, env.res);
+          onError(error, env.request, env.response);
         });
 
       return null;
