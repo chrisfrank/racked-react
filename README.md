@@ -24,14 +24,15 @@ const App = ({ request }) => (
 * [Why not?](#why-not)
 * [Installation](#installation)
 * [Setup](#setup)
-* [Hello, world](#hello-world)
-* [The `<Response>` Component](#the-response-component)
-* [Async I/O with the `<Hold>` Component](#async-io-with-the-hold-component)
-* [Routing](#routing)
-  * [via Branch and Endpoint](routing-with-branch-and-endpoint)
-  * [via react-router](#routing-with-react-router)
+* [A "Hello, world" Example](#a-hello-world-example)
+* [A More Interesting Example](#a-more-interesting-example)
+* [Component API]
+  * [The `<Response>` Component](#the-response-component)
+  * [Async I/O with the `<Hold>` Component](#async-io-with-the-hold-component)
+  * [Routing](#routing)
+    * [via Branch and Endpoint](routing-with-branch-and-endpoint)
+    * [via react-router](#routing-with-react-router)
 * [Use with Express](#use-with-express)
-* [Component API Reference](#component-api-reference)
 * [Performance](#performance)
 
 ## Why not?
@@ -137,13 +138,18 @@ to a [React Context][context].
 When your App renders, it can use racked-react's utility components to consume
 or modify the context, until it eventually renders a `<Response>`.
 
-## A Kitchen Sink example
+## A More Interesting Example
 
 This example uses a few of racked-react's utility components: `<Hold>` for async
 I/O, `<Endpoint>` for HTTP-method-based routing, and `<Response>` for writing
 finished responses.
 
-`GET => /` returns the current user's name `PATCH => /` updates the current user
+`GET => /` returns the current user's name
+
+`PATCH => /` updates the current user.
+
+Calls to the database are fake, but should look familiar if you've ever used
+[knex.js][knex].
 
 ```jsx
 // src/index.js
@@ -176,37 +182,29 @@ const App = ({ request }) => (
 
 const fakeAuthenticate = req => {
   const token = req.headers['Authorization'];
-  return Promise.resolve(
-    fakeDatabase('users')
-      .where({ token })
-      .first()
-  );
+  return fakeDatabase('users')
+    .where({ token })
+    .first();
 };
 
 const fakeUpdate = (user, req) => {
-  const qs = url.parse(req.url).query;
-  const params = querystring.parse(qs);
-  return Promise.resolve(
-    fakeDatabase('users')
-      .where({ id: user.id })
-      .update({
-        name: params.name,
-      })
-  );
+  const { query } = url.parse(req.url);
+  const params = querystring.parse(query);
+  return fakeDatabase('users')
+    .where({ id: user.id })
+    .update({
+      name: params.name,
+    });
 };
-
-const fakeDatabase = () => ({
-  where: () => fakeDatabase(),
-  update: ({ name }) => ({ name }),
-  first: () => ({ name: 'James T. Kirk' }),
-});
 
 const server = http.createServer(racked(App));
 
 server.listen(3000);
 ```
 
-## The `<Response>` Component
+## Component API Reference
+
+### The `<Response>` Component
 
 A `<Response>` is the most important component in the library. You'll render a
 `<Response>` each time your app handles a request.
@@ -215,7 +213,7 @@ As in Ruby's [Rack][rack], a `<Response>` in racked-react is made of an HTTP
 status code, some key/value HTTP headers, and a body. Most of the time you won't
 need to explicitly specify all those things, but here's how you would:
 
-### Status, Headers, Body
+#### Status, Headers, Body
 
 ```jsx
 const { Response } = require('racked-react');
@@ -230,7 +228,7 @@ const HTMLResponse = () => (
 );
 ```
 
-### Implicit status/headers
+#### Implicit status/headers
 
 A `<Response>` sets headers and status by default, so most of the time you won't
 need to specify them:
@@ -240,7 +238,7 @@ need to specify them:
 const Hello = () => <Response body="<h1>Hello, world</h1>" />;
 ```
 
-### Best-practice for HTML: use JSX children instead of `body`
+#### Best-practice for HTML: use JSX children instead of `body`
 
 If you're rendering a long HTML body, use JSX children instead of a `body` prop:
 
@@ -253,7 +251,7 @@ const LongHello = () => (
 );
 ```
 
-### Best-practice for JSON: use the `json` prop instead of `body`
+#### Best-practice for JSON: use the `json` prop instead of `body`
 
 Instead of setting Content-Type via `headers` and calling `JSON.stringify` on
 `body`, you can use the `json` prop to return JSON-encoded data with the correct
@@ -264,11 +262,11 @@ cont data = [{ name: 'example' }, { name: 'another example' }];
 const JSONResponse = () => <Response json={data} />;
 ```
 
-## Async I/O with the `<Hold>` Component
+### Async I/O with the `<Hold>` Component
 
 TODO
 
-## Routing
+### Routing
 
 Racked-react can handle Routing entirely on its own, via its `<Branch>` and
 `<Endpoint>` components. But if you're already comfortable with [React
@@ -276,25 +274,23 @@ Router][router], you can use that instead, optionally composed with an
 `<Endpoint>` when you need to restrict a route to just a particular HTTP-method,
 like POST, GET, or DELETE.
 
-### Routing with Branch and Endpoint
+#### Routing with `<Branch>` and `<Endpoint>`
 
 TODO
 
-### Routing with React Router
+#### Routing with React Router
 
 TODO
 
-## Component API Reference
+## Use with Express, Koa, etc
 
 TODO
 
-### Use with Express
+## Performance
 
 TODO
 
-### Performance
-
-TODO
+## Contributing
 
 [razzle]: https://github.com/jaredpalmer/razzle
 [next]: https://github.com/zeit/next.js/
@@ -303,3 +299,4 @@ TODO
 [rack]: https://github.com/rack/rack
 [node-server]: https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
 [context]: https://reactjs.org/docs/context.html
+[knex]: http://knexjs.org
