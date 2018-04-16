@@ -4,11 +4,9 @@ import { StaticRouter } from 'react-router';
 import { EnvProvider } from './index';
 
 // wrap an App component in a node/http-compatible function
-// default server is node/http, but it works with express, etc
 const racked = App => (request, response) =>
-  _rack_render({
+  rackRender({
     _rack_app: App,
-    _rack_store: [],
     request,
     response,
   });
@@ -16,9 +14,9 @@ const racked = App => (request, response) =>
 // render the racked App, passing this fn itself down as a render
 // prop, so that components down the chain can instantiate Promises
 // and re-call render with the promise results
-const _rack_render = props => {
-  const env = Object.assign({}, props, {
-    _rack_render,
+const rackRender = props => {
+  const env = Object.assign({ _rack_store: [] }, props, {
+    _rack_render: rackRender,
     _rack_holds: 0,
     _rack_branch: null,
     branch: {},

@@ -8,14 +8,6 @@ HTTP-method-based routing, and more.
 I love React's declarative, component-based approach to building user
 interfaces. Turns out it's also a delightful way to handle HTTP requests.
 
-There are already some great toolkits for building static sites in React -- most
-notably [next.js][next] and [after.js][after].
-
-Though you _can_ build static sites in racked-react, it's aimed more at full
-CRUD apps, JSON APIs, and other I/O-heavy projects. Unlike Next and After,
-racked-react lets you asynchronously read (and write!) data on the server,
-without without statically declaring your routes in advance.
-
 ```jsx
 // an app that says hi
 const { Response } = require('racked-react');
@@ -29,28 +21,44 @@ const App = ({ request }) => (
 
 ## Contents
 
+* [Why not?](#why-not)
 * [Installation](#installation)
 * [Setup](#setup)
 * [Hello, world](#hello-world)
-* [Responses](#responses)
+* [The `<Response>` Component](#the-response-component)
+* [Async I/O with the `<Hold>` Component](#async-io-with-the-hold-component)
 * [Routing](#routing)
   * [via Branch and Endpoint](routing-with-branch-and-endpoint)
   * [via react-router](#routing-with-react-router)
-* [Async I/O](#async-io)
-* [Use with Express, Koa, etc](#use-with-express-koa-etc)
+* [Use with Express](#use-with-express)
 * [Component API Reference](#component-api-reference)
 * [Performance](#performance)
 
-## Install
+## Why not?
 
-Via npm or yarn: `npm install --save racked-react` or `yarn add racked-react`
+If your app delivers static HTML and doesn't need to write data, you're probably
+better off using [next.js][next] or [after.js][after] instead of racked-react.
+
+Though you _can_ build static sites in racked-react, it's aimed more at full
+CRUD apps, JSON APIs, and other I/O-heavy projects. Unlike Next and After,
+racked-react lets you asynchronously read and write data on the server, without
+without statically declaring your routes in advance.
+
+## Installation
+
+Via npm or yarn:
+
+`npm install --save racked-react`
+
+or
+
+`yarn add racked-react`
 
 ## Setup
 
-You can use racked-react without JSX and babel, but I don't recommend it. Jared
-Palmer's [Razzle][razzle] can help you configure a robust dev environment, or
-you can use something like this `package.json` file, with babel for React stuff
-and nodemon for reloading your dev server:
+These docs assume you'll be using JSX via Babel. The sample `package.json` file
+below should get you started with Babel, nodemon for running a dev server, and a
+few helper scripts:
 
 ```json
 {
@@ -76,14 +84,16 @@ and nodemon for reloading your dev server:
 }
 ```
 
-These docs assume you're using something like that package.json, with the
+For more advanced setups, I recommend Jared Palmer's [razzle][razzle] library.
+
+Assuming you're using something like the sample package.json above, with the
 following directory structure:
 
-`src` => your source code
+`src/` => your source code
 
-`build` => your app's build folder
+`build/` => your app's build folder
 
-Here's what the `scripts` do:
+In that context, here's what the package `scripts` do:
 
 `npm run start` starts your development server.
 
@@ -93,7 +103,7 @@ Here's what the `scripts` do:
 
 ## Hello, world.
 
-Here's a complete "hello world" app in racked-react:
+This is a complete "hello world" app in racked-react:
 
 ```jsx
 // src/index.js
@@ -118,9 +128,13 @@ server.listen(3000);
 2. Run `npm run start` to start your development server.
 3. Visit http://localhost:3000 to see 'Hello, world' in your browser.
 
-## Responses
+### What's happening:
 
-A `<Response>` is the most important racked-react Component. You'll render a
+Magic!
+
+## The `<Response>` Component
+
+A `<Response>` is the most important component in the library. You'll render a
 `<Response>` each time your app handles a request.
 
 As in Ruby's [Rack][rack], a `<Response>` in racked-react is made of an HTTP
@@ -140,24 +154,6 @@ const HTMLResponse = () => (
     body="<h1>Hello, world</h1>"
   />
 );
-
-// sending JSON explicitly
-const JSONResponse = () => (
-  <Response
-    status={200}
-    headers={{ 'Content-Type': 'application/json' }}
-    body={JSON.stringify({ hello: 'world' })}
-  />
-);
-
-// an HTTP 301 redirect
-const Redirect = () => (
-  <Response
-    status={301}
-    headers={{ Location: 'https://reactjs.org' }}
-    body={null}
-  />
-);
 ```
 
 ### Implicit status/headers
@@ -166,33 +162,37 @@ A `<Response>` sets headers and status by default, so most of the time you won't
 need to specify them:
 
 ```jsx
-<Response body="<h1>Hello, world</h1>" />;
-// returns an HTTP response with status 200 and some sensible default headers
+// returns an HTTP 200 response with default headers
+const Hello = () => <Response body="<h1>Hello, world</h1>" />;
 ```
 
-### Implicit Body via React Children
+### Best-practice for HTML: use JSX children instead of `body`
 
-If you're rendering a long HTML body, use react's implicit `children` prop
-instead of a `body` prop:
+If you're rendering a long HTML body, use JSX children instead of a `body` prop:
 
 ```jsx
-<Response>
-  <h1>Hello, world.</h1>
-  <p>You look nice today.</p>
-</Response>;
+const LongHello = () => (
+  <Response>
+    <h1>Hello, world.</h1>
+    <p>You look nice today.</p>
+  </Response>
+);
 ```
 
-### Rendering JSON via the `json` prop
+### Best-practice for JSON: use the `json` prop instead of `body`
 
-Instead of setting Content-Type via `headers` and calling JSON.stringify on
+Instead of setting Content-Type via `headers` and calling `JSON.stringify` on
 `body`, you can use the `json` prop to return JSON-encoded data with the correct
 Content-Type:
 
 ```jsx
 cont data = [{ name: 'example' }, { name: 'another example' }];
-
-<Response json={data} />
+const JSONResponse = () => <Response json={data} />;
 ```
+
+## Async I/O with the `<Hold>` Component
+
+TODO
 
 ## Routing
 
@@ -210,15 +210,11 @@ TODO
 
 TODO
 
-## Async I/O
-
-TODO
-
 ## Component API Reference
 
 TODO
 
-### Use with Express, Koa, etc
+### Use with Express
 
 TODO
 
