@@ -1,6 +1,6 @@
 # Racked React
 
-Handle HTTP requests in React, with asynchronous I/O
+Handle HTTP requests in React, with dynamic routing and asynchronous I/O
 
 ## Why?
 
@@ -30,19 +30,18 @@ const App = ({ request }) => (
   * [Async I/O with the `<Hold>` Component](#async-io-with-the-hold-component)
   * [Routing](#routing)
     * [via react-router](#routing-with-react-router)
-    * [via Branch and Endpoint](routing-with-branch-and-endpoint)
-* [Use with Express](#use-with-express)
-* [Performance](#performance)
+    * [via `<Branch>` and `<Endpoint>`](routing-with-branch-and-endpoint)
+* [Usage with Express](#usage-with-express)
 
 ## Why not?
 
 If your app delivers static HTML and doesn't need to write data, you'll probably
 be happier with [next.js][next] or [after.js][after] than with racked-react.
 
-Though you _can_ build static sites in racked-react, it's aimed at building JSON
-APIs, traditional CRUD apps, or other I/O-heavy projects. Unlike Next and After,
-racked-react lets you asynchronously read and write data on the server, without
-statically declaring your routes in advance.
+Though you _can_ build static sites in racked-react, it's aimed at building REST
+APIs, traditional CRUD apps, and other I/O-heavy projects. Its main advantage
+over Next and After is that it lets you asynchronously read and write data on
+the server, without statically declaring your routes in advance.
 
 ## Installation
 
@@ -139,9 +138,8 @@ or modify the context, until it eventually renders a `<Response>`.
 
 ## A More Interesting Example
 
-This example uses a few of racked-react's utility components: `<Hold>` for async
-I/O, `<Endpoint>` for HTTP-method-based routing, and `<Response>` for writing
-finished responses.
+This example uses a few of racked-react's `<Hold>` for async I/O, and
+`<Response>` for writing finished responses.
 
 `GET => /` returns the current user's name
 
@@ -259,6 +257,27 @@ const LongHello = () => (
 );
 ```
 
+### For sending full HTML pages, make a `<Layout>` component
+
+```jsx
+const Layout = ({ children }) => (
+  <Response headers={{ 'Content-Type': 'text/html' }}>
+    <html>
+      <head>
+        <title>Hello from racked-react</title>
+      </head>
+      <body>{children}</body>
+    </html>
+  </Response>
+);
+
+const App = () => (
+  <Layout>
+    <h1>Hello from inside a full HTML document</h1>
+  </Layout>
+);
+```
+
 #### For JSON: use the `json` prop instead of `body`
 
 Instead of setting Content-Type via `headers` and calling `JSON.stringify` on
@@ -311,21 +330,133 @@ can just use that!
 
 #### Routing with React Router
 
-TODO
+The react-router lib provides a `<StaticRouter>` for use on the server, but
+doing I/O usually requires staticlly configuring your routes beforehand, as in
+[this gist][static_routes]. So doing I/O means losing some of the advantanges of
+dynamic routing.
+
+With racked-react, you can use the `<Hold>` component with `<StaticRouter>` to
+handle routing &amp; I/O dynamically:
+
+```jsx
+import React from 'react';
+import { StaticRouter, Switch, Route } from 'react-router';
+import { Hold, Response, racked } from '../src/index';
+
+// Routing with react router
+// <StaticRouter> requires a `context` object -- we'll use it to make
+// racked-react's env available to our Routes as props.staticContext
+//
+// Here's an app that handles Create, Read, Update, Destroy at `/artists`,
+// renders a home page at `/`, and 404s at any other route
+const App = env => (
+  <StaticRouter context={env} location={env.request.url}>
+    <Switch>
+      <Route path="/artists" component={Artists} />
+      <Route exact path="/" render={() => <Response>Home</Response>} />
+      <Route render={() => <Response status={404} />} />
+    </Switch>
+  </StaticRouter>
+);
+
+// The Artists component gets rendered by a <Route />, so accepts all the
+// standard route props -- match, staticContext, etc
+const Artists = ({ match, staticContext }) => {
+  const { request } = staticContext;
+  return (
+    <Switch>
+      <Route
+        exact
+        path={match.url}
+        component={request.method === 'POST' ? Create : List}
+      />
+      <Route
+        path={`${match.url}/:id`}
+        render={r => (
+          <Hold until={findArtist(r.match.params.id)}>
+            {artist => (
+              <Switch>
+                {request.method === 'PATCH' && <Route component={Update} />}
+                {request.method === 'DELETE' && <Route component={Destroy} />}
+                <Route render={() => <Response body={artist.name} />} />
+              </Switch>
+            )}
+          </Hold>
+        )}
+      />
+    </Switch>
+  );
+};
+// the components that power each route are, for brevity, omitted from this
+// example. see docs/routing-with-react-router.test.js for the full code.
+```
 
 #### Routing with `<Branch>` and `<Endpoint>`
 
-TODO
+Documentation forthcoming, see test/crud/test.js for now.
 
-## Use with Express, Koa, etc
+## Usage with Express
 
-TODO
+For apps that do anything useful, you may want some of the power of
+[express.js][express] for parsing query params, reading JSON bodies, etc. Here's
+how you might set that up:
 
-## Performance
+```jsx
+import React from 'react';
+import request from 'supertest';
+import express from 'express';
+import bodyParser from 'body-parser';
+import { db, migrate, seed, rollback } from '../test/db';
+import { Hold, Response, racked } from '../src/index';
 
-TODO
+// an App that echoes back a request's JSON body
+const App = ({ request }) => <Response json={request.body} />;
+
+// node's `http` lib doesn't parse request bodies by default, so
+// let's use express instead of http.createServer:
+
+// instantiate express
+const server = express();
+
+// mount middleware for parsing JSON request bodies
+server.use(bodyParser.json());
+
+// map all incoming requests to our racked(App)
+server.all('*', racked(App));
+
+// start the server
+server.listen(process.env.PORT || 3000);
+```
 
 ## Contributing
+
+For bugs, please open
+[an issue](https://github.com/chrisfrank/racked-react/issues) on Github.
+
+Pull requests for new features are welcome!
+
+## License
+
+### MIT
+
+Copyright 2018 Chris Frank
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 [razzle]: https://github.com/jaredpalmer/razzle
 [next]: https://github.com/zeit/next.js/
@@ -334,4 +465,6 @@ TODO
 [rack]: https://github.com/rack/rack
 [node-server]: https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
 [context]: https://reactjs.org/docs/context.html
-[knex]: http://knexjs.org
+[knex]: http://knexjs.org/
+[express]: http://expressjs.com/
+[static_routes]: https://gist.github.com/ryanflorence/efbe562332d4f1cc9331202669763741
