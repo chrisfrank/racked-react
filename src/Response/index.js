@@ -25,6 +25,7 @@ const Response = ({ status, headers, body, children, json }) => (
 Response.defaultProps = {
   status: 200,
   headers: {},
+  body: '',
 };
 
 module.exports = Response;

@@ -1,7 +1,6 @@
 # Racked React
 
-Handle HTTP requests in React, with helper components for asynchronous I/O,
-HTTP-method-based routing, and more.
+Handle HTTP requests in React, with asynchronous I/O
 
 ## Why?
 
@@ -30,8 +29,8 @@ const App = ({ request }) => (
   * [The `<Response>` Component](#the-response-component)
   * [Async I/O with the `<Hold>` Component](#async-io-with-the-hold-component)
   * [Routing](#routing)
-    * [via Branch and Endpoint](routing-with-branch-and-endpoint)
     * [via react-router](#routing-with-react-router)
+    * [via Branch and Endpoint](routing-with-branch-and-endpoint)
 * [Use with Express](#use-with-express)
 * [Performance](#performance)
 
@@ -60,10 +59,10 @@ or
 ### JSX/Babel
 
 These docs assume you'll be using JSX via Babel. Like React itself, racked-react
-works fine without JSX, but it's less pleasant to work with.
+works fine without JSX, but JSX makes the work more pleasant.
 
 The sample `package.json` file below should get you started with Babel/JSX,
-nodemon for running a dev server, and a few helper scripts:
+`nodemon` for running a dev server, and a few helper scripts:
 
 ```json
 {
@@ -158,23 +157,23 @@ const React = require('react');
 const url = require('url');
 const querystring = require('querystring');
 const request = require('supertest');
-const { Response, Hold, Endpoint, racked } = require('racked-react');
+const { Response, Hold, racked } = require('racked-react');
 
 // an app that greets or updates the current user
 const App = ({ request }) => (
   <Hold until={fakeAuthenticate(request)}>
     {currentUser => (
       <React.Fragment>
-        <Endpoint method="GET">
+        {request.method === 'GET' && (
           <Response>
             <h1>Hello {currentUser.name}</h1>
           </Response>
-        </Endpoint>
-        <Endpoint method="PATCH">
+        )}
+        {request.method === 'PATCH' && (
           <Hold until={fakeUpdate(currentUser, request)}>
             {result => <Response>Updated! New name is {result.name}</Response>}
           </Hold>
-        </Endpoint>
+        )}
       </React.Fragment>
     )}
   </Hold>
@@ -206,14 +205,23 @@ server.listen(3000);
 
 ### The `<Response>` Component
 
-A `<Response>` is the most important component in the library. You'll render a
+A `<Response>` is the most important component in the library. You'll render one
 `<Response>` each time your app handles a request.
 
-As in Ruby's [Rack][rack], a `<Response>` in racked-react is made of an HTTP
-status code, some key/value HTTP headers, and a body. Most of the time you won't
-need to explicitly specify all those things, but here's how you would:
+#### `<Response>` Prop Types
+
+| Property | Type       | Default                            | Description                                                                                                                                |
+| :------- | :--------- | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| status   | Number     | `200`                              | An HTTP status code                                                                                                                        |
+| headers  | Object     | `{ 'Content-Type': 'text/plain' }` | If the client specifies an 'Accept' header, <Response> will use that content-type instead of the text/plain default.                       |
+| body     | String     | `''`                               |                                                                                                                                            |
+| children | React elem |                                    | Using `children` will override `body` -- useful for rendering long JSX bodies                                                              |
+| json     | any        |                                    | Use `json` will override `body` to automatically call JSON.stringify(json) and set the request 'Content-Type' header to 'application/json' |
 
 #### Status, Headers, Body
+
+As in Ruby's [Rack][rack], a `<Response>` in racked-react is made of an HTTP
+status code, some key/value HTTP headers, and a body.
 
 ```jsx
 const { Response } = require('racked-react');
@@ -238,7 +246,7 @@ need to specify them:
 const Hello = () => <Response body="<h1>Hello, world</h1>" />;
 ```
 
-#### Best-practice for HTML: use JSX children instead of `body`
+#### For HTML: use JSX children instead of `body`
 
 If you're rendering a long HTML body, use JSX children instead of a `body` prop:
 
@@ -251,7 +259,7 @@ const LongHello = () => (
 );
 ```
 
-#### Best-practice for JSON: use the `json` prop instead of `body`
+#### For JSON: use the `json` prop instead of `body`
 
 Instead of setting Content-Type via `headers` and calling `JSON.stringify` on
 `body`, you can use the `json` prop to return JSON-encoded data with the correct
@@ -264,21 +272,48 @@ const JSONResponse = () => <Response json={data} />;
 
 ### Async I/O with the `<Hold>` Component
 
-TODO
+Use a `<Hold>` component when you need to asynchronously read or write data.
+
+`<Hold>` component accepts a promise as a prop, suspends rendering until the
+promise resolves, then renders its children with the resolved promise.
+
+```jsx
+// use a render prop when you need the result of the promise
+const HoldWithRenderProp = () => (
+  <Hold until={fetchUsers()}>{users => <Response json={users} />}</Hold>
+);
+
+// a fake user-fetching function
+const fetchUsers = () => fakeDatabase.select('*').from('users');
+
+// use regular JSX children when you need to perform an async operation,
+// but don't need to render the result
+const HoldWithRenderProp = () => (
+  <Hold until={deleteEverything()}>
+    <Response body="Deleted everything!" />
+  </Hold>
+);
+```
+
+#### `<Hold>` Prop Types
+
+| Property | Type                 | Default                 | Description                                                                                                           |
+| :------- | :------------------- | :---------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| until    | Function, Promise    |                         | Accepts either a promise, e.g `knex('users')`, or a function that returns a promise, e.g. `() => knex('users')`.      |
+| onError  | Function             | sends an HTTP-500 error | A function of the form `(error, request, response) => {}`                                                             |
+| children | Function, React elem |                         | When you need to render the result `until`, use a function as `children`. Otherwise, you can just use React elements. |
 
 ### Routing
 
-Racked-react can handle Routing entirely on its own, via its `<Branch>` and
-`<Endpoint>` components. But if you're already comfortable with [React
-Router][router], you can use that instead, optionally composed with an
-`<Endpoint>` when you need to restrict a route to just a particular HTTP-method,
-like POST, GET, or DELETE.
+Racked-react can handle Routing on its own, via its `<Branch>` and `<Endpoint>`
+components. But if you're already comfortable with [React Router][router], you
+can just use that!
 
-#### Routing with `<Branch>` and `<Endpoint>`
+#### Routing with React Router
 
 TODO
 
-#### Routing with React Router
+#### Routing with `<Branch>` and `<Endpoint>`
 
 TODO
 

@@ -2,23 +2,23 @@ const React = require('react');
 const url = require('url');
 const querystring = require('querystring');
 const request = require('supertest');
-const { Response, Hold, Endpoint, racked } = require('racked-react');
+const { Response, Hold, racked } = require('racked-react');
 
 // an app that greets or updates the current user
 const App = ({ request }) => (
   <Hold until={fakeAuthenticate(request)}>
     {currentUser => (
       <React.Fragment>
-        <Endpoint method="GET">
+        {request.method === 'GET' && (
           <Response>
             <h1>Hello {currentUser.name}</h1>
           </Response>
-        </Endpoint>
-        <Endpoint method="PATCH">
+        )}
+        {request.method === 'PATCH' && (
           <Hold until={fakeUpdate(currentUser, request)}>
             {result => <Response>Updated! New name is {result.name}</Response>}
           </Hold>
-        </Endpoint>
+        )}
       </React.Fragment>
     )}
   </Hold>
