@@ -25,7 +25,7 @@ const App = ({ request }) => (
 * [Setup](#setup)
 * [A "Hello, world" Example](#a-hello-world-example)
 * [A More Interesting Example](#a-more-interesting-example)
-* [Component API]
+* [Component API Reference](#component-api-reference)
   * [The `<Response>` Component](#the-response-component)
   * [Async I/O with the `<Hold>` Component](#async-io-with-the-hold-component)
   * [Routing](#routing)
@@ -58,7 +58,7 @@ or
 ### JSX/Babel
 
 These docs assume you'll be using JSX via Babel. Like React itself, racked-react
-works fine without JSX, but JSX makes the work more pleasant.
+works fine without JSX, but JSX can make your work more pleasant.
 
 The sample `package.json` file below should get you started with Babel/JSX,
 `nodemon` for running a dev server, and a few helper scripts:
@@ -211,7 +211,7 @@ A `<Response>` is the most important component in the library. You'll render one
 | Property | Type       | Default                            | Description                                                                                                                                |
 | :------- | :--------- | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
 | status   | Number     | `200`                              | An HTTP status code                                                                                                                        |
-| headers  | Object     | `{ 'Content-Type': 'text/plain' }` | If the client specifies an 'Accept' header, <Response> will use that content-type instead of the text/plain default.                       |
+| headers  | Object     | `{}`                               | If the client specifies an 'Accept' header, <Response> will respect it.                       |
 | body     | String     | `''`                               |                                                                                                                                            |
 | children | React elem |                                    | Using `children` will override `body` -- useful for rendering long JSX bodies                                                              |
 | json     | any        |                                    | Use `json` will override `body` to automatically call JSON.stringify(json) and set the request 'Content-Type' header to 'application/json' |
@@ -257,7 +257,7 @@ const LongHello = () => (
 );
 ```
 
-### For sending full HTML pages, make a `<Layout>` component
+#### For sending full HTML pages, make a `<Layout>` component
 
 ```jsx
 const Layout = ({ children }) => (
@@ -302,16 +302,19 @@ const HoldWithRenderProp = () => (
   <Hold until={fetchUsers()}>{users => <Response json={users} />}</Hold>
 );
 
-// a fake user-fetching function
-const fetchUsers = () => fakeDatabase.select('*').from('users');
-
 // use regular JSX children when you need to perform an async operation,
 // but don't need to render the result
 const HoldWithRenderProp = () => (
   <Hold until={deleteEverything()}>
-    <Response body="Deleted everything!" />
+    <Response status={204} body="Deleted everything!" />
   </Hold>
 );
+
+// a fake user-fetching function
+const fetchUsers = () => fakeDatabase.select('*').from('users');
+// a fake delete-everything function
+const deleteEverything = () => fakeDatabase('users').truncate();
+
 ```
 
 #### `<Hold>` Prop Types
@@ -330,7 +333,7 @@ can just use that!
 
 #### Routing with React Router
 
-The react-router lib provides a `<StaticRouter>` for use on the server, but
+React Router provides a `<StaticRouter>` for use on the server, but
 doing I/O usually requires staticlly configuring your routes beforehand, as in
 [this gist][static_routes]. So doing I/O means losing some of the advantanges of
 dynamic routing.
@@ -393,21 +396,19 @@ const Artists = ({ match, staticContext }) => {
 
 #### Routing with `<Branch>` and `<Endpoint>`
 
-Documentation forthcoming, see test/crud/test.js for now.
+Documentation forthcoming, see [test/crud/test.js][test] for now.
 
 ## Usage with Express
 
-For apps that do anything useful, you may want some of the power of
-[express.js][express] for parsing query params, reading JSON bodies, etc. Here's
-how you might set that up:
+For apps that do anything useful, you may want [express.js][express] for
+parsing query params, reading JSON bodies, etc. Here's how you might set
+that up:
 
 ```jsx
 import React from 'react';
-import request from 'supertest';
 import express from 'express';
 import bodyParser from 'body-parser';
-import { db, migrate, seed, rollback } from '../test/db';
-import { Hold, Response, racked } from '../src/index';
+import { Response, racked } from 'racked-react';
 
 // an App that echoes back a request's JSON body
 const App = ({ request }) => <Response json={request.body} />;
@@ -468,3 +469,4 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 [knex]: http://knexjs.org/
 [express]: http://expressjs.com/
 [static_routes]: https://gist.github.com/ryanflorence/efbe562332d4f1cc9331202669763741
+[test]: https://github.com/chrisfrank/racked-react/blob/master/test/crud/test.js
