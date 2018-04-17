@@ -2,9 +2,12 @@
   "name": "racked-react",
   "version": "0.1.0",
   "description":
-    "Handle http requests in React, with an API inspired by Ruby's Rack",
+    "Handle HTTP requests in React, with dynamic routing and asynchronous I/O",
   "main": "dist/index.js",
-  "repository": "https://www.npmjs.com/package/racked-react",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrisfrank/racked-react.git"
+  },
   "author": "Chris Frank",
   "license": "MIT",
   "private": false,

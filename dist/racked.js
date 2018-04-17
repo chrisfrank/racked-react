@@ -19,12 +19,10 @@ function _interopRequireDefault(obj) {
 }
 
 // wrap an App component in a node/http-compatible function
-// default server is node/http, but it works with express, etc
 var racked = function racked(App) {
   return function(request, response) {
-    return _rack_render({
+    return rackRender({
       _rack_app: App,
-      _rack_store: [],
       request: request,
       response: response,
     });
@@ -34,9 +32,9 @@ var racked = function racked(App) {
 // render the racked App, passing this fn itself down as a render
 // prop, so that components down the chain can instantiate Promises
 // and re-call render with the promise results
-var _rack_render = function _rack_render(props) {
-  var env = Object.assign({}, props, {
-    _rack_render: _rack_render,
+var rackRender = function rackRender(props) {
+  var env = Object.assign({ _rack_store: [] }, props, {
+    _rack_render: rackRender,
     _rack_holds: 0,
     _rack_branch: null,
     branch: {},

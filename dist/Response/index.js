@@ -49,6 +49,7 @@ var Response = function Response(_ref) {
 Response.defaultProps = {
   status: 200,
   headers: {},
+  body: '',
 };
 
 module.exports = Response;
