@@ -45,7 +45,8 @@ var Response = function Response(_ref) {
         format: head['Content-Type'],
       })
     );
-    return response.end(suffix);
+    response.end(suffix);
+    return null;
   });
 };
 

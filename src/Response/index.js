@@ -26,7 +26,8 @@ const Response = ({
           format: head['Content-Type'],
         })
       );
-      return response.end(suffix);
+      response.end(suffix);
+      return null;
     }}
   </EnvConsumer>
 );

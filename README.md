@@ -39,7 +39,7 @@ const App = ({ request }) => (
 
 const fetchSongs = () => db.select('*').from('songs);
 
-racked(App).listen(process.env.PORT || 3000);
+racked(App).listen(3000);
 ```
 
 ## Contents
@@ -56,7 +56,7 @@ racked(App).listen(process.env.PORT || 3000);
     * [via react-router](#routing-with-react-router)
     * [via `<Branch>` and `<Endpoint>`](routing-with-branch-and-endpoint)
   * [The `racked` function](#the-racked-function)
-* [Usage with Express](#usage-with-express)
+* [Use with Express](#use-with-express)
 
 ## Why not?
 
@@ -79,6 +79,9 @@ or
 `yarn add racked-react`
 
 ## Setup
+
+Skip to the [next section](#setup) if you already have a server-side JSX/Babel
+setup that works for you.
 
 ### JSX/Babel
 
@@ -280,9 +283,9 @@ const LongHello = () => (
 #### For sending full HTML pages, make a `<Layout>` component
 
 If your app responds with full HTML pages, you'll probably want to make a
-reusable `<Layout>` component. In this example, `<Layout> accepts a`title`prop
-for setting the page title, and a`children`prop for rendering the contents of
-the page`<body>`.
+reusable `<Layout>` component. In this example, `<Layout>` accepts a `title`
+prop for setting the page title, and a`children`prop for rendering the contents
+of the page `<body>`.
 
 This example also uses the `<Response>` component's `prefix` prop to prepend a
 valid HTML5 Doctype to the response. JSX doesn't support rendering <!DOCTYPE> on
@@ -322,7 +325,7 @@ const JSONResponse = () => <Response json={data} />;
 
 Use a `<Hold>` component when you need to asynchronously read or write data.
 
-`<Hold>` component accepts a promise as a prop, suspends rendering until the
+The `<Hold>` component accepts a promise as a prop, suspends rendering until the
 promise resolves, then renders its children with the resolved promise.
 
 ```jsx
@@ -393,12 +396,12 @@ import { Hold, Response, racked } from '../src/index';
 
 // Routing with react router
 // <StaticRouter> requires a `context` object -- we'll use it to make
-// racked-react's env available to our Routes as props.staticContext
+// racked-react's props available to our Routes as props.staticContext
 //
 // Here's an app that handles Create, Read, Update, Destroy at `/artists`,
 // renders a home page at `/`, and 404s at any other route
-const App = env => (
-  <StaticRouter context={env} location={env.request.url}>
+const App = props => (
+  <StaticRouter context={props} location={props.request.url}>
     <Switch>
       <Route path="/artists" component={Artists} />
       <Route exact path="/" render={() => <Response>Home</Response>} />
@@ -443,18 +446,19 @@ const Artists = ({ match, staticContext }) => {
 
 Documentation forthcoming, see [test/crud/test.js][test] for now.
 
-#### The `racked` function
+### The `racked` function
 
-Calling `racked(App)` returns an object that with two keys: `listen`, and
-`handler`:
+Calling `racked(App)` returns an object with two keys: `listen`, and `handler`:
 
-````js
+```js
+// calling racked(App) returns =>
 {
  // `handler` renders your app with ({ request, response }) as top-level props
   handler: (req, res) => <App request={req} response={res} />,
  // `listen` creates an http.Server and delgates to its `listen` function
   listen: () => http.createServer(handler).listen(arguments)
 }
+```
 
 If you're using racked-react on its own, you'll probably ignore the `handler`
 and just call listen:
@@ -462,12 +466,12 @@ and just call listen:
 ```js
 const app = racked(App);
 app.listen(3000);
-````
+```
 
 If you're using racked-react with express.js, you'll use the `handler` to mount
 your `racked(App).handler` as middleware. See below for details.
 
-## Usage with Express
+## Use with Express
 
 For apps that do anything useful, you may want access to URL params, a parsed
 request body, etc. Using [express.js][express] and some middleware can handle
@@ -530,7 +534,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 [after]: https://github.com/jaredpalmer/after.js/blob/master/README.md
 [router]: https://reacttraining.com/react-router/
 [rack]: https://github.com/rack/rack
-[node-server]: https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
+[node-http]: https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/
 [context]: https://reactjs.org/docs/context.html
 [knex]: http://knexjs.org/
 [express]: http://expressjs.com/

@@ -1,8 +1,7 @@
 {
   "name": "racked-react",
-  "version": "0.2.1",
-  "description":
-    "Handle HTTP requests in React, with straightforward async I/O",
+  "version": "0.2.0",
+  "description": "Handle HTTP requests in React",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
@@ -12,16 +11,16 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "path-to-regexp": "^2.2.0",
+    "path-to-regexp": "^2.2",
     "react": "^16.3",
     "react-dom": "^16.3"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
+    "babel-cli": "^6.26",
+    "babel-core": "^6.26",
     "babel-jest": "^22.4.3",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-react": "^6.24.1",
+    "babel-preset-env": "^1.6",
+    "babel-preset-react": "^6.24",
     "body-parser": "^1.18.2",
     "co-body": "^5.1.1",
     "express": "^4.16.3",
@@ -30,8 +29,8 @@
     "knex": "^0.14.4",
     "lint-staged": "^7.0.2",
     "nodemon": "^1.17.3",
-    "react-router": "^4.x",
-    "react-router-dom": "^4.2.2",
+    "react-router": "^4",
+    "react-router-dom": "^4",
     "regenerator-runtime": "^0.11.1",
     "sqlite3": "^4.0.0",
     "supertest": "^3.0.0"
