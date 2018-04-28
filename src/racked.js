@@ -1,15 +1,18 @@
 import React from 'react';
+import { createServer } from 'http';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
 import { EnvProvider } from './index';
 
 // wrap an App component in a node/http-compatible function
-const racked = App => (request, response) =>
-  rackRender({
-    _rack_app: App,
-    request,
-    response,
-  });
+const racked = App => {
+  const handler = (request, response) =>
+    rackRender({ _rack_app: App, request, response });
+
+  const listen = () => createServer(handler).listen(arguments);
+
+  return { handler, listen };
+};
 
 // render the racked App, passing this fn itself down as a render
 // prop, so that components down the chain can instantiate Promises

@@ -31,7 +31,7 @@ const App = () => (
 test(
   'Data loading',
   done => {
-    request(racked(App))
+    request(racked(App).handler)
       .get('/')
       .expect(200, 'john paul george ringo')
       .end(done);
@@ -45,7 +45,7 @@ test('Error handling', done => {
       {data => <Response body={data} />}
     </Hold>
   );
-  request(racked(ErrorApp))
+  request(racked(ErrorApp).handler)
     .get('/')
     .expect(500)
     .end(done);

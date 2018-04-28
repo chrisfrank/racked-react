@@ -7,7 +7,7 @@ const Red = () => <Redirect to={url} />;
 const Res = () => <Response headers={{ Location: url }} status={301} />;
 
 test('Redirect via component', done => {
-  request(racked(Red))
+  request(racked(Red).handler)
     .get('/')
     .expect(301)
     .expect('Location', url)
@@ -15,7 +15,7 @@ test('Redirect via component', done => {
 });
 
 test('Redirects via headers', done => {
-  request(racked(Res))
+  request(racked(Res).handler)
     .get('/')
     .expect(301)
     .expect('Location', url)

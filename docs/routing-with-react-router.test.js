@@ -57,7 +57,7 @@ const Update = () => <Response>Updated artist</Response>;
 const Destroy = () => <Response>Destroyed artist</Response>;
 const List = () => <Response>Listing artists</Response>;
 
-const app = racked(App);
+const app = racked(App).handler;
 
 beforeAll(migrate);
 beforeAll(seed);

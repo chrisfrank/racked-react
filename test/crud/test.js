@@ -26,7 +26,7 @@ const App = () => (
   </Branch>
 );
 
-const app = racked(App);
+const app = racked(App).handler;
 
 beforeEach(migrate);
 beforeEach(seed);

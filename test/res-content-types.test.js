@@ -7,7 +7,7 @@ const data = ['hello', 'world'];
 describe('Response content types', () => {
   describe('via http Accept header', () => {
     const App = () => <Response body={JSON.stringify('ok')} />;
-    const server = racked(App);
+    const server = racked(App).handler;
 
     test('It returns JSON when asked', done =>
       request(server)
@@ -38,7 +38,7 @@ describe('Response content types', () => {
           headers={{ 'Content-Type': 'application/json' }}
         />
       );
-      request(racked(App))
+      request(racked(App).handler)
         .get('/')
         .expect('Content-Type', /json/)
         .expect(200, data)
@@ -47,7 +47,7 @@ describe('Response content types', () => {
 
     test('json prop', done => {
       const App = () => <Response json={data} />;
-      request(racked(App))
+      request(racked(App).handler)
         .get('/')
         .expect('Content-Type', /json/)
         .expect(200, data)

@@ -9,7 +9,7 @@ const renderedString = '<h1 data-reactroot="">hello, world</h1>';
 describe('Response body', () => {
   test('as a "body" prop', done => {
     const App = () => <Response body={rawString} />;
-    request(racked(App))
+    request(racked(App).handler)
       .get('/')
       .expect(200, rawString)
       .end(done);
@@ -17,7 +17,7 @@ describe('Response body', () => {
 
   test('as a React children prop', done => {
     const App = () => <Response>{jsxString}</Response>;
-    request(racked(App))
+    request(racked(App).handler)
       .get('/')
       .expect(200, renderedString)
       .end(done);
@@ -26,7 +26,7 @@ describe('Response body', () => {
 
 test('It renders children over body when both are specified', done => {
   const App = () => <Response body={rawString}>{jsxString}</Response>;
-  request(racked(App))
+  request(racked(App).handler)
     .get('/')
     .expect(200, renderedString)
     .end(done);
@@ -34,7 +34,7 @@ test('It renders children over body when both are specified', done => {
 
 test('It render json over body when both are specified', done => {
   const App = () => <Response json={['hello']} body={rawString} />;
-  request(racked(App))
+  request(racked(App).handler)
     .get('/')
     .expect(200, ['hello'])
     .end(done);

@@ -7,6 +7,7 @@ import { Hold, Response, racked } from '../src/index';
 
 // an App that echoes back a request's JSON body
 const App = ({ request }) => <Response json={request.body} />;
+const app = racked(App).handler;
 
 // node's `http` lib doesn't parse request bodies by default, so
 // let's use express instead of http.createServer:
@@ -18,7 +19,7 @@ const server = express();
 server.use(bodyParser.json());
 
 // map all incoming requests to our racked(App)
-server.all('*', racked(App));
+server.use(app);
 
 test('it parses JSON request bodies via express', done => {
   const data = { hello: 'world' };

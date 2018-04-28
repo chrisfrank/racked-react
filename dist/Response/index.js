@@ -23,6 +23,8 @@ var Response = function Response(_ref) {
     headers = _ref.headers,
     body = _ref.body,
     children = _ref.children,
+    prefix = _ref.prefix,
+    suffix = _ref.suffix,
     json = _ref.json;
   return _react2.default.createElement(_index.EnvConsumer, null, function(env) {
     var request = env.request,
@@ -34,7 +36,8 @@ var Response = function Response(_ref) {
       json: json,
     });
     response.writeHead(status, head);
-    response.end(
+    if (prefix) response.write(prefix);
+    response.write(
       (0, _renderBody2.default)({
         body: body,
         children: children,
@@ -42,7 +45,7 @@ var Response = function Response(_ref) {
         format: head['Content-Type'],
       })
     );
-    return null;
+    return response.end(suffix);
   });
 };
 

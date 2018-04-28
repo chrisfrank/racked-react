@@ -1,6 +1,6 @@
 # Racked React
 
-Handle HTTP requests in React, with dynamic routing and asynchronous I/O
+Handle HTTP requests in React
 
 ## Why?
 
@@ -8,14 +8,38 @@ I love React's declarative, component-based approach to building user
 interfaces. Turns out it's also a delightful way to handle HTTP requests.
 
 ```jsx
-// an app that says hi
-const { Response } = require('racked-react');
+// an app that lists songs on localhost:3000/
+
+// boilerplate
+const React = require('react');
+const db = require('your-favorite-database-library');
+
+// components from racked-react:
+// <Hold> for async I/O
+// <Response> for writing HTTP responses
+// `racked` for connecting your App to http.createServer, express, or whatever
+const { Response, Hold, racked } = require('racked-react');
 
 const App = ({ request }) => (
-  <Response status={200} headers={{ 'X-Hello-From': 'racked-react' }}>
-    <h1>Hello at {request.url}</h1>
-  </Response>
+  <Hold until={fetchSongs}>
+    {songs => (
+      <Response status={200} headers={{ 'X-Hello-From': 'racked-react' }}>
+        <h1>A list of songs:</h1>
+        <ul>
+          {songs.map(song => (
+            <li key={song.id}>
+              <a href={song.mp3_url}>{song.name}</a>
+            </li>
+          ))}
+        </ul>
+      </Response>
+    )}
+  </Hold>
 );
+
+const fetchSongs = () => db.select('*').from('songs);
+
+racked(App).listen(process.env.PORT || 3000);
 ```
 
 ## Contents
@@ -31,6 +55,7 @@ const App = ({ request }) => (
   * [Routing](#routing)
     * [via react-router](#routing-with-react-router)
     * [via `<Branch>` and `<Endpoint>`](routing-with-branch-and-endpoint)
+  * [The `racked` function](#the-racked-function)
 * [Usage with Express](#usage-with-express)
 
 ## Why not?
@@ -87,8 +112,6 @@ The sample `package.json` file below should get you started with Babel/JSX,
 }
 ```
 
-For more advanced setups, I recommend Jared Palmer's [Razzle][razzle] library.
-
 ### Scripts &amp; Directory Structure
 
 Assuming you're using something like the sample package.json above, your app's
@@ -112,19 +135,17 @@ Let's see an app that listens on localhost:3000, and says hello:
 
 ```jsx
 // src/index.js
-const http = require('http');
 const React = require('react');
 const { racked, Response } = require('racked-react');
 
-const App = () => (
+const App = ({ request, response }) => (
   <Response>
     <h1>Hello, world.</h1>
+    <p>This request was made at {request.url}.</p>
   </Response>
 );
 
-const server = http.createServer(racked(App));
-
-server.listen(3000);
+racked(App).listen(3000);
 ```
 
 ### What's happening:
@@ -138,8 +159,8 @@ or modify the context, until it eventually renders a `<Response>`.
 
 ## A More Interesting Example
 
-This example uses a few of racked-react's `<Hold>` for async I/O, and
-`<Response>` for writing finished responses.
+This example uses racked-react's `<Hold>` for async I/O, and `<Response>` for
+writing finished responses.
 
 `GET => /` returns the current user's name
 
@@ -150,7 +171,6 @@ Calls to the database are fake, but should look familiar if you've ever used
 
 ```jsx
 // src/index.js
-const http = require('http');
 const React = require('react');
 const url = require('url');
 const querystring = require('querystring');
@@ -194,9 +214,7 @@ const fakeUpdate = (user, req) => {
     });
 };
 
-const server = http.createServer(racked(App));
-
-server.listen(3000);
+racked(App).listen(3000);
 ```
 
 ## Component API Reference
@@ -208,13 +226,15 @@ A `<Response>` is the most important component in the library. You'll render one
 
 #### `<Response>` Prop Types
 
-| Property | Type       | Default                            | Description                                                                                                                                |
-| :------- | :--------- | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| status   | Number     | `200`                              | An HTTP status code                                                                                                                        |
-| headers  | Object     | `{}`                               | If the client specifies an 'Accept' header, <Response> will respect it.                       |
-| body     | String     | `''`                               |                                                                                                                                            |
-| children | React elem |                                    | Using `children` will override `body` -- useful for rendering long JSX bodies                                                              |
-| json     | any        |                                    | Use `json` will override `body` to automatically call JSON.stringify(json) and set the request 'Content-Type' header to 'application/json' |
+| Property | Type       | Default | Description                                                                                                                                                       |
+| :------- | :--------- | :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| status   | Number     | `200`   | An HTTP status code                                                                                                                                               |
+| headers  | Object     | `{}`    | If the client specifies an 'Accept' header, `<Response>` will respect it.                                                                                         |
+| body     | String     | `''`    |                                                                                                                                                                   |
+| children | React elem |         | Using `children` will override `body` -- useful for rendering long JSX bodies                                                                                     |
+| json     | any        |         | Use `json` will override `body` to automatically call JSON.stringify(json) and set the request 'Content-Type' header to 'application/json'                        |
+| prefix   | String     |         | Optionally prepend a string to your response -- useful for rendering `<!DOCTYPE html>` or other things JSX doesn't support                                        |
+| suffix   | String     |         | Optionally append a string to your response. Useful for nothing I can think of, but the asymmetry of supporting `prefix` without `suffix` would have bothered me. |
 
 #### Status, Headers, Body
 
@@ -259,12 +279,21 @@ const LongHello = () => (
 
 #### For sending full HTML pages, make a `<Layout>` component
 
+If your app responds with full HTML pages, you'll probably want to make a
+reusable `<Layout>` component. In this example, `<Layout> accepts a`title`prop
+for setting the page title, and a`children`prop for rendering the contents of
+the page`<body>`.
+
+This example also uses the `<Response>` component's `prefix` prop to prepend a
+valid HTML5 Doctype to the response. JSX doesn't support rendering <!DOCTYPE> on
+its own.
+
 ```jsx
-const Layout = ({ children }) => (
-  <Response headers={{ 'Content-Type': 'text/html' }}>
+const Layout = ({ children, title }) => (
+  <Response prefix="<!DOCTYPE html>" headers={{ 'Content-Type': 'text/html' }}>
     <html>
       <head>
-        <title>Hello from racked-react</title>
+        <title>{title}</title>
       </head>
       <body>{children}</body>
     </html>
@@ -272,7 +301,7 @@ const Layout = ({ children }) => (
 );
 
 const App = () => (
-  <Layout>
+  <Layout title="Hello, World">
     <h1>Hello from inside a full HTML document</h1>
   </Layout>
 );
@@ -314,7 +343,6 @@ const HoldWithRenderProp = () => (
 const fetchUsers = () => fakeDatabase.select('*').from('users');
 // a fake delete-everything function
 const deleteEverything = () => fakeDatabase('users').truncate();
-
 ```
 
 #### `<Hold>` Prop Types
@@ -325,6 +353,23 @@ const deleteEverything = () => fakeDatabase('users').truncate();
 | onError  | Function             | sends an HTTP-500 error | A function of the form `(error, request, response) => {}`                                                             |
 | children | Function, React elem |                         | When you need to render the result `until`, use a function as `children`. Otherwise, you can just use React elements. |
 
+#### Composing `<Hold>` with `<Response>`
+
+Render `<Hold>`s outside of `<Response>`. A `<Hold>` _inside_ a `<Response>`
+does nothing.
+
+```jsx
+// GOOD
+<Hold until={somethingHappens}>
+  {result => <Response json={result} />}
+</Hold>
+
+// Bad
+<Response>
+  <Hold until={somethingHappens}>{result => '???'}</Hold>
+</Response>
+```
+
 ### Routing
 
 Racked-react can handle Routing on its own, via its `<Branch>` and `<Endpoint>`
@@ -333,9 +378,9 @@ can just use that!
 
 #### Routing with React Router
 
-React Router provides a `<StaticRouter>` for use on the server, but
-doing I/O usually requires staticlly configuring your routes beforehand, as in
-[this gist][static_routes]. So doing I/O means losing some of the advantanges of
+React Router provides a `<StaticRouter>` for use on the server, but doing I/O
+usually requires staticlly configuring your routes beforehand, as in [this
+gist][static_routes]. So doing I/O means losing some of the advantanges of
 dynamic routing.
 
 With racked-react, you can use the `<Hold>` component with `<StaticRouter>` to
@@ -398,11 +443,35 @@ const Artists = ({ match, staticContext }) => {
 
 Documentation forthcoming, see [test/crud/test.js][test] for now.
 
+#### The `racked` function
+
+Calling `racked(App)` returns an object that with two keys: `listen`, and
+`handler`:
+
+````js
+{
+ // `handler` renders your app with ({ request, response }) as top-level props
+  handler: (req, res) => <App request={req} response={res} />,
+ // `listen` creates an http.Server and delgates to its `listen` function
+  listen: () => http.createServer(handler).listen(arguments)
+}
+
+If you're using racked-react on its own, you'll probably ignore the `handler`
+and just call listen:
+
+```js
+const app = racked(App);
+app.listen(3000);
+````
+
+If you're using racked-react with express.js, you'll use the `handler` to mount
+your `racked(App).handler` as middleware. See below for details.
+
 ## Usage with Express
 
-For apps that do anything useful, you may want [express.js][express] for
-parsing query params, reading JSON bodies, etc. Here's how you might set
-that up:
+For apps that do anything useful, you may want access to URL params, a parsed
+request body, etc. Using [express.js][express] and some middleware can handle
+that for you:
 
 ```jsx
 import React from 'react';
@@ -413,17 +482,14 @@ import { Response, racked } from 'racked-react';
 // an App that echoes back a request's JSON body
 const App = ({ request }) => <Response json={request.body} />;
 
-// node's `http` lib doesn't parse request bodies by default, so
-// let's use express instead of http.createServer:
-
 // instantiate express
 const server = express();
 
 // mount middleware for parsing JSON request bodies
 server.use(bodyParser.json());
 
-// map all incoming requests to our racked(App)
-server.all('*', racked(App));
+// mount our racked(App) as the final middleware
+server.use(racked(App).handler);
 
 // start the server
 server.listen(process.env.PORT || 3000);

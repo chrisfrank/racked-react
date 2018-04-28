@@ -51,9 +51,11 @@ const fakeDatabase = () => ({
   first: () => ({ name: 'James T. Kirk' }),
 });
 
+const app = racked(App).handler;
+
 describe('a Kitchen sink example', () => {
   test('It says hi', done => {
-    request(racked(App))
+    request(app)
       .get('/')
       .then(res => {
         expect(res.text).toMatch('James T. Kirk');
@@ -61,7 +63,7 @@ describe('a Kitchen sink example', () => {
       });
   });
   test('It updates a user', done => {
-    request(racked(App))
+    request(app)
       .patch('/?name=Spock')
       .then(res => {
         expect(res.text).toMatch('Spock');

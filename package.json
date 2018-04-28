@@ -1,8 +1,8 @@
 {
   "name": "racked-react",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description":
-    "Handle HTTP requests in React, with dynamic routing and asynchronous I/O",
+    "Handle HTTP requests in React, with straightforward async I/O",
   "main": "dist/index.js",
   "repository": {
     "type": "git",

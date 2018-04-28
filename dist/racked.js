@@ -3,10 +3,13 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
+var _arguments = arguments;
 
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
+
+var _http = require('http');
 
 var _server = require('react-dom/server');
 
@@ -20,13 +23,15 @@ function _interopRequireDefault(obj) {
 
 // wrap an App component in a node/http-compatible function
 var racked = function racked(App) {
-  return function(request, response) {
-    return rackRender({
-      _rack_app: App,
-      request: request,
-      response: response,
-    });
+  var handler = function handler(request, response) {
+    return rackRender({ _rack_app: App, request: request, response: response });
   };
+
+  var listen = function listen() {
+    return (0, _http.createServer)(handler).listen(_arguments);
+  };
+
+  return { handler: handler, listen: listen };
 };
 
 // render the racked App, passing this fn itself down as a render

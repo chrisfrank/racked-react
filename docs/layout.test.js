@@ -1,12 +1,12 @@
 import React from 'react';
 import request from 'supertest';
-import { Response, racked } from '../src/index';
+const { Response, racked } = require('racked-react');
 
-const Layout = ({ children }) => (
-  <Response headers={{ 'Content-Type': 'text/html' }}>
+const Layout = ({ children, title }) => (
+  <Response prefix="<!DOCTYPE html>" headers={{ 'Content-Type': 'text/html' }}>
     <html>
       <head>
-        <title>Hello from racked-react</title>
+        <title>{title}</title>
       </head>
       <body>{children}</body>
     </html>
@@ -20,10 +20,11 @@ const App = () => (
 );
 
 test('Layout renders children inside a full document', done => {
-  request(racked(App))
+  request(racked(App).handler)
     .get('/')
     .then(res => {
       expect(res.text).toMatch('HTML document');
+      expect(res.text).toMatch('DOCTYPE');
       done();
     });
 });
