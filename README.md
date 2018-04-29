@@ -80,8 +80,8 @@ or
 
 ## Setup
 
-Skip to the [next section](#setup) if you already have a server-side JSX/Babel
-setup that works for you.
+Skip to the [next section](#a-hello-world-example) if you already have a
+server-side JSX/Babel setup that works for you.
 
 ### JSX/Babel
 
