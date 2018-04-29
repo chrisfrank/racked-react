@@ -97,7 +97,7 @@ The sample `package.json` file below should get you started with Babel/JSX,
   "version": "0.1.0",
   "main": "build/index.js",
   "dependencies": {
-    "racked-react": "^0.1"
+    "racked-react": "^0.2"
   },
   "devDependencies": {
     "babel-cli": "^6",
@@ -487,16 +487,16 @@ import { Response, racked } from 'racked-react';
 const App = ({ request }) => <Response json={request.body} />;
 
 // instantiate express
-const server = express();
+const app = express();
 
 // mount middleware for parsing JSON request bodies
-server.use(bodyParser.json());
+app.use(bodyParser.json());
 
-// mount our racked(App) as the final middleware
-server.use(racked(App).handler);
+// mount our racked(App)'s `handler` function as the last middleware:
+app.use(racked(App).handler);
 
 // start the server
-server.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3000);
 ```
 
 ## Contributing
