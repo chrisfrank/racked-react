@@ -1,6 +1,6 @@
 {
   "name": "racked-react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Handle HTTP requests in React",
   "main": "dist/index.js",
   "repository": {

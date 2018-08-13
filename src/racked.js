@@ -1,7 +1,6 @@
 import React from 'react';
 import { createServer } from 'http';
 import { renderToString } from 'react-dom/server';
-import { StaticRouter } from 'react-router';
 import { EnvProvider } from './index';
 
 // wrap an App component in a node/http-compatible function

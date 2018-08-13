@@ -13,8 +13,6 @@ var _http = require('http');
 
 var _server = require('react-dom/server');
 
-var _reactRouter = require('react-router');
-
 var _index = require('./index');
 
 function _interopRequireDefault(obj) {
